@@ -5,9 +5,10 @@ import (
 )
 
 // Structure that defines the properties of a Color.
-// R: Value of the red component. Must be between 0 and 1
-// G: Value of the green component. Must be between 0 and 1
-// B: Value of the blue component. Must be between 0 and 1
+// Properties:
+// - R: Value of the red component. Must be between 0 and 1
+// - G: Value of the green component. Must be between 0 and 1
+// - B: Value of the blue component. Must be between 0 and 1
 type Color struct {
 	R, G, B float32
 }
