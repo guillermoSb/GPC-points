@@ -2,6 +2,7 @@ package gl
 
 import (
 	"encoding/binary"
+	"fmt"
 	"log"
 	"os"
 )
@@ -13,16 +14,14 @@ type Renderer struct {
 	color Color
 	pixels [][]Color
 	vpX,vpY,vpWidth,vpHeight uint32
-
 }
 
 // Initialize the renderer
-func (r * Renderer) GlInit() {
-	r.clearColor = Color{0.4,0,0}	// Default color is black
-	r.color = Color {1,1,1}	// Default color is white
+func (r * Renderer) GlInit(width, height uint32) {
+	r.glCreateWindow(width, height)
 }
 
-func (r * Renderer) GlCreateWindow(width, height uint32) {
+func (r * Renderer) glCreateWindow(width, height uint32) {
 	r.width = width
 	r.height = height
 	r.pixels = [][]Color{}
@@ -56,19 +55,23 @@ func (r * Renderer) GlClear() {
 }
 
 func (r * Renderer) GlPoint(point Point) {
-	// TODO: Implement new way of drawing points
 	// Get the row for the point
-	if point.X >= float32(r.width) || point.X < 0{
+	if (point.X >= float32(r.width) || point.X < 0) || (point.Y >= float32(r.height) || point.Y < 0){
 		return;
 	}
-	if point.Y >= float32(r.height) || point.Y < 0{
-		return;
-	}
-
-	// row := int(math.Floor(float64(point.X) * float64(r.width - 1)))
-	// column := int(math.Floor(float64(point.Y) * float64(r.height - 1)))
 	r.pixels[int(point.Y)][int(point.X)] = r.color
 }
+
+func (r * Renderer) GlViewPortPoint(point Point) {
+	if point.X < -1 || point.X > 1 || point.Y < -1 || point.Y > 1 {
+		return;
+	}
+	x := (point.X + 1) * ((float32(r.vpWidth - 1) / 2 )) + float32(r.vpX)
+	y := (point.Y + 1) * ((float32(r.vpHeight - 1) / 2 )) + float32(r.vpY)
+	fmt.Println(x,y)
+	r.GlPoint(Point{x,y})
+}
+
 
 func (r *Renderer) GlViewPort(posX, posY, width, height uint32) {
 	r.vpX = posX

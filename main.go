@@ -12,15 +12,20 @@ import (
 
 func main() {
 	fmt.Println("---------- BMP IMAGE CREATION ----------")	
+	width := 16
+	height := 16
 	renderer := gl.Renderer{}
-	renderer.GlInit()
-	renderer.GlCreateWindow(360,360);
-	renderer.GlClearColor(0,0,0)
+	renderer.GlInit(uint32(width), uint32(height))
+	renderer.GlClearColor(0.1,0.1,0.1)
+	renderer.GlColor(1,0,0)
 	renderer.GlClear()
-	renderer.GlViewPort(360/2 - 50,360/2 - 50,100,100)
+	renderer.GlViewPort(0,0,1,1)
 	renderer.GlClearViewport(gl.Color{1,1,1})
-
-	// renderer.GlClearViewport(gl.Color{R:0,G:0,B:1})
+	renderer.GlColor(0.5,0.5,0.5)
+	renderer.GlViewPortPoint(gl.Point{1,1})
+	renderer.GlViewPortPoint(gl.Point{0,0})
+	renderer.GlViewPortPoint(gl.Point{-1,-1})
+	// renderer.GlViewPortPoint(gl.Point{0,0})
 
 
 	// EJEMPLOS EN CLASE
