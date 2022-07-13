@@ -2,7 +2,6 @@ package gl
 
 import (
 	"encoding/binary"
-	"fmt"
 	"log"
 	"os"
 )
@@ -68,7 +67,6 @@ func (r * Renderer) GlViewPortPoint(point Point) {
 	}
 	x := (point.X + 1) * ((float32(r.vpWidth - 1) / 2 )) + float32(r.vpX)
 	y := (point.Y + 1) * ((float32(r.vpHeight - 1) / 2 )) + float32(r.vpY)
-	fmt.Println(x,y)
 	r.GlPoint(Point{x,y})
 }
 
