@@ -2,7 +2,9 @@ package gl
 
 import (
 	"encoding/binary"
+	"fmt"
 	"log"
+	"math"
 	"os"
 )
 
@@ -79,8 +81,11 @@ func (r * Renderer) GlClear() {
 // Draws a point on the renderer
 // Parameters:
 // - point: the point to draw
-func (r * Renderer) GlPoint(point Point) {
+func (r * Renderer) GlPoint(point Point, colors ...Color) {
 	// Get the row for the point
+	if len(colors) > 0 {
+		r.GlColor(colors[0].R, colors[0].G, colors[0].B)
+	}
 	if (point.X >= float32(r.width) || point.X < 0) || (point.Y >= float32(r.height) || point.Y < 0){
 		return;
 	}
@@ -120,6 +125,81 @@ func (r *Renderer) GlClearViewport(color Color) {
 		for y := int(r.vpY); y < (int(r.vpY) + int(r.vpHeight)); y++ {
 			r.pixels[y][x] = color
 		}
+	}
+}
+
+
+func (r *Renderer) GLLine(v0, v1 Point, colors ...Color) {
+	x0 := v0.X
+	x1 := v1.X
+	y0 := v0.Y
+	y1 := v1.Y
+	fmt.Println(v1);
+	
+
+	// Dibujar un punto si ambos valores son iguales
+	if x0 == x1 && y0 == y1{
+		r.GlPoint(v0, colors...)
+		return
+	}
+	
+	dy := math.Abs(float64(y1) - float64(y0))
+	dx := math.Abs(float64(x1) - float64(x0))
+
+	steep := dy > dx
+	// Tiene pendiente mayor a 1 o menor a -1, intercambiar las x por las y, y se dibuja una línea vertical
+	if steep {
+		tempx0 := x0
+		tempx1 := x1
+		tempy0 := y0
+		tempy1 := y1
+		x0 = tempy0
+		y0 = tempx0
+		x1 = tempy1
+		y1 = tempx1
+	}
+	// Si el punto inicial en X, es mayor que el punto final X, intercambiar los puntos para siempre dibujar de iz a derecha
+	if x0 > x1 {
+		tempx0 := x0
+		tempx1 := x1
+		tempy0 := y0
+		tempy1 := y1
+		x0 = tempx1
+		x1 = tempx0
+		y0 = tempy1
+		y1 = tempy0
+	}
+	dy = (float64(y1) - float64(y0))
+	dx = (float64(x1) - float64(x0))
+
+	offset := 0.0
+	limit := 0.5
+
+	
+	m := (dy)/(dx)
+	y := y0
+	
+	fmt.Println("x0: ", x0, "x1: ", x1, "y0: ", y0, "y1: ", y1, "m", m)
+	for x := x0; x <= x1; x++ {
+		if steep {
+			// Dibujar de manera vertical
+			r.GlPoint(Point{y,x}, colors...)
+		} else {
+			// Dibujar de manera horizontal	
+			r.GlPoint(Point{x,y}, colors...)
+		}
+		
+		offset += m
+
+		if math.Abs(offset) >= limit {
+			if y0 < y1 {
+				y += 1
+			} else {
+				y -= 1
+			}
+			limit += 1
+		}
+		
 	}
 }
 
