@@ -128,7 +128,8 @@ func (r *Renderer) GlClearViewport(color Color) {
 	}
 }
 
-
+// Draws a line on the viewport using the bresenham line drawing algorithm/
+// Takes two vectors to draw and a list of colors. The first value is going to be used.
 func (r *Renderer) GLLine(v0, v1 Point, colors ...Color) {
 	x0 := v0.X
 	x1 := v1.X

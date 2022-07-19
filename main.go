@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"guillermoSb/glDots/gl"
-	"math/rand"
+	"math"
 )
 
 func main() {
@@ -16,16 +16,30 @@ func main() {
 	renderer.GlColor(1,0,0)
 	renderer.GlClear()
 
-	lines := 200
-	offset := 0	
-	for i := 0; i < lines; i++ {
-		offset += width/lines
-		r := rand.Float32()
-		g := rand.Float32()
-		b := rand.Float32()
-		renderer.GLLine(gl.Point{float32(0), float32(height - offset)}, gl.Point{float32(offset), float32(0)}, gl.Color{r,g,b})
-		renderer.GLLine(gl.Point{float32(width), float32(offset)}, gl.Point{float32(width - offset), float32(height)}, gl.Color{r,g,b})
+	// Square:
+	renderer.GLLine(gl.Point{50, 50}, gl.Point{50, 200}) // |
+	renderer.GLLine(gl.Point{50, 200}, gl.Point{200, 200}) // -
+	renderer.GLLine(gl.Point{200, 200}, gl.Point{200, 50}) // |
+	renderer.GLLine(gl.Point{200, 50}, gl.Point{50, 50}) // -
+
+	// Triangle
+
+	renderer.GLLine(gl.Point{300, 50}, gl.Point{500, 50}) // -
+	renderer.GLLine(gl.Point{300, 50}, gl.Point{400, 200}) // -
+	renderer.GLLine(gl.Point{500, 50}, gl.Point{400, 200}) // -
+
+	// Hexagon
+	angle := math.Pi - (2/3) * math.Pi
+	yprev := 50.0
+	xprev := 600.0
+	for i := 0; i < 6; i++ {
+		renderer.GLLine((gl.Point{float32(xprev), float32(yprev)}), gl.Point{float32(math.Cos(200 * angle)), float32(math.Sin(200 * angle))})
 	}
+
+
+
+	
+	
 
 	
 	renderer.GlFinish("out.bmp")
