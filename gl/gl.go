@@ -191,7 +191,7 @@ func (r *Renderer) GLLine(v0, v1 Point, colors ...Color) {
 		}
 		
 		offset += m
-
+		// Dibujar dependiendo si la linea va para abajo o para arriba.
 		if math.Abs(offset) >= limit {
 			if y0 < y1 {
 				y += 1
