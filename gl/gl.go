@@ -135,7 +135,7 @@ func (r *Renderer) GLLine(v0, v1 Point, colors ...Color) {
 	x1 := v1.X
 	y0 := v0.Y
 	y1 := v1.Y
-	fmt.Println(v1);
+	
 	
 
 	// Dibujar un punto si ambos valores son iguales
@@ -240,6 +240,16 @@ func (r * Renderer) GlFinish(fileName string) {
 			f.Write(r.pixels[i][j].bytes())
 		}
 	}
+}
+
+// Draws a polygon with a set of points and a given color.
+func (r * Renderer) GlPolygon(color Color,points ...Point) {
+	// fmt.Println(points[1].X,points[1].Y)
+	// r.GLLine(Point{165,380}, Point{165,400})
+	r.GLLine(Point{0,0}, Point{float32(r.width -2 ), float32(r.height - 2)})
+	// for i := 0; i < len(points); i++ {
+	// 	r.GLLine(points[i], points[(i+1) % len(points)], color)		
+	// }
 }
 
 // ****************************************************************
