@@ -247,7 +247,7 @@ func (r * Renderer) GlPolygon(color Color,points ...Point) {
 	for i := 0; i < len(points); i++ {
 		r.GLLine(points[i], points[(i+1) % len(points)], color)		
 	}
-	r.GlFillPolygon(color, points...)
+	// r.GlFillPolygon(color, points...)
 }
 
 // Fills a polygon with a set of points and a given color
