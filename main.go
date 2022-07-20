@@ -15,23 +15,22 @@ func main() {
 	renderer.GlColor(1,0,0)
 	renderer.GlClear()
 
-	// Square:
-	renderer.GLLine(gl.Point{50, 50}, gl.Point{50, 200}) // |
-	renderer.GLLine(gl.Point{50, 200}, gl.Point{200, 200}) // -
-	renderer.GLLine(gl.Point{200, 200}, gl.Point{200, 50}) // |
-	renderer.GLLine(gl.Point{200, 50}, gl.Point{50, 50}) // -
+	renderer.GlPolygon(gl.Color{1,0,0}, gl.Point{50, 50}, gl.Point{50, 200},gl.Point{50, 200}, gl.Point{200, 200},gl.Point{200, 200}, gl.Point{200, 50},gl.Point{200, 50}, gl.Point{50, 50})
 
 	// Triangle
-
-	renderer.GLLine(gl.Point{300, 50}, gl.Point{500, 50}) // -
-	renderer.GLLine(gl.Point{300, 50}, gl.Point{400, 200}) // -
-	renderer.GLLine(gl.Point{500, 50}, gl.Point{400, 200}) // -
+	renderer.GlPolygon(gl.Color{1,0,0}, gl.Point{300, 50}, gl.Point{500, 50}, gl.Point{300, 50}, gl.Point{400, 200}, gl.Point{500, 50}, gl.Point{400, 200})
 
 	// Triangle 90 degrees
-	renderer.GLLine(gl.Point{600,50}, gl.Point{750,50}) // |
-	renderer.GLLine(gl.Point{600,50},gl.Point{600,200}) // _
-	renderer.GLLine(gl.Point{600,200}, gl.Point{750,50}) // \
+	renderer.GlPolygon(gl.Color{1,0,0},gl.Point{600,50}, gl.Point{750,50}, gl.Point{600,50},gl.Point{600,200}, gl.Point{600,200}, gl.Point{750,50})
 
+	// Arrow
+	renderer.GlPolygon(gl.Color{0,1,0}, gl.Point{50,400}, gl.Point{50,450}, gl.Point{150,450}, gl.Point{150, 475}, gl.Point{200,425},gl.Point{150, 375}, gl.Point{150, 400})
+
+	// Hexagon
+	renderer.GlPolygon(gl.Color{0,0,1}, gl.Point{300, 425}, gl.Point{375, 375}, gl.Point{450, 425}, gl.Point{450, 500},
+					   gl.Point{375,550}, gl.Point{300, 500})
+	// Pentagon
+	renderer.GlPolygon(gl.Color{0,1,1}, gl.Point{600, 375}, gl.Point{750, 375}, gl.Point{780, 500}, gl.Point{675, 550}, gl.Point{575, 500})
 	// Hexagon
 	// angle := math.Pi - (2/3) * math.Pi
 	// yprev := 50.0

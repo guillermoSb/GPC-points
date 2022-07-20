@@ -242,6 +242,13 @@ func (r * Renderer) GlFinish(fileName string) {
 	}
 }
 
+// Draws a polygon with a set of points and a given color.
+func (r * Renderer) GlPolygon(color Color,points ...Point) {
+	for i := 0; i < len(points); i++ {
+		r.GLLine(points[i], points[(i+1) % len(points)], color)		
+	}
+}
+
 // ****************************************************************
 // Utils and Structures
 // ****************************************************************
