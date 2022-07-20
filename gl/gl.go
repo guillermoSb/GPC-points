@@ -2,6 +2,7 @@ package gl
 
 import (
 	"encoding/binary"
+	"fmt"
 	"log"
 	"math"
 	"os"
@@ -245,6 +246,53 @@ func (r * Renderer) GlFinish(fileName string) {
 func (r * Renderer) GlPolygon(color Color,points ...Point) {
 	for i := 0; i < len(points); i++ {
 		r.GLLine(points[i], points[(i+1) % len(points)], color)		
+	}
+	r.GlFillPolygon(color, points...)
+}
+
+// Fills a polygon with a set of points and a given color
+func (r * Renderer) GlFillPolygon(color Color,points ...Point) {
+	ymin := float32(points[0].Y)
+	ymax := float32(points[0].Y)
+	xmin := float32(points[0].X)
+	xmax := float32(points[0].X)
+	// Get the minimum y and maximum y
+	for i := 0; i < len(points); i++ {		
+		if points[i].X < xmin {
+			xmin = points[i].X
+		}
+		if points[i].X > xmax {
+			xmax = points[i].X
+		}
+
+		if points[i].Y < ymin {
+			ymin = points[i].Y
+		}
+		if points[i].Y > ymax {
+			ymax = points[i].Y
+		}
+		
+	}
+	fmt.Println(xmin,xmax,ymin,ymax)
+	for y := ymin; y <= ymax; y++ {
+		intersectingPoints := []Point{}
+		// check if the point is inside the polygon
+		for x := xmin; x <= xmax; x++ {
+			fmt.Println(x,y)
+			if r.pixels[int(x)][int(y)] != r.clearColor {
+				intersectingPoints = append(intersectingPoints, Point{float32(x),float32(y)})
+			}
+		}
+		pair := 0
+		fmt.Println(intersectingPoints)
+		
+		for pair < len(intersectingPoints) {
+			for x := intersectingPoints[pair].X; x < intersectingPoints[(pair + 1) % len(intersectingPoints)].X; x++ {
+				r.GlPoint(Point{float32(x),float32(y)}, color)
+			}
+
+			pair ++;
+		}
 	}
 }
 
