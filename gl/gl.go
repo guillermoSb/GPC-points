@@ -2,7 +2,6 @@ package gl
 
 import (
 	"encoding/binary"
-	"fmt"
 	"log"
 	"math"
 	"os"
@@ -180,7 +179,7 @@ func (r *Renderer) GLLine(v0, v1 Point, colors ...Color) {
 	m := (dy)/(dx)
 	y := y0
 	
-	fmt.Println("x0: ", x0, "x1: ", x1, "y0: ", y0, "y1: ", y1, "m", m)
+	// fmt.Println("x0: ", x0, "x1: ", x1, "y0: ", y0, "y1: ", y1, "m", m)
 	for x := x0; x <= x1; x++ {
 		if steep {
 			// Dibujar de manera vertical
@@ -244,12 +243,9 @@ func (r * Renderer) GlFinish(fileName string) {
 
 // Draws a polygon with a set of points and a given color.
 func (r * Renderer) GlPolygon(color Color,points ...Point) {
-	// fmt.Println(points[1].X,points[1].Y)
-	// r.GLLine(Point{165,380}, Point{165,400})
-	r.GLLine(Point{0,0}, Point{float32(r.width -2 ), float32(r.height - 2)})
-	// for i := 0; i < len(points); i++ {
-	// 	r.GLLine(points[i], points[(i+1) % len(points)], color)		
-	// }
+	for i := 0; i < len(points); i++ {
+		r.GLLine(points[i], points[(i+1) % len(points)], color)		
+	}
 }
 
 // ****************************************************************
