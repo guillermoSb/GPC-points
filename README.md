@@ -15,5 +15,8 @@ Librerías Utilizadas:
 ## Ejercicio 01: Dibujando un punto.
 Output: Una imagen en donde se dibujan estrellas fuera del viewport y adentro del viewport se dibujan pixeles al azar del mismo color. La imagen se puede ver en el archivo `out.bmp`
 
+# Ejercicio 02: Dibujando Poligonos
+Output: Una imagen con 6 poligonos. Utilizando la funcion `GlPolygon` del renderer.
+
 ![](out.bmp)
 
