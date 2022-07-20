@@ -2,7 +2,6 @@ package gl
 
 import (
 	"encoding/binary"
-	"fmt"
 	"log"
 	"math"
 	"os"
@@ -243,57 +242,54 @@ func (r * Renderer) GlFinish(fileName string) {
 }
 
 // Draws a polygon with a set of points and a given color.
-func (r * Renderer) GlPolygon(color Color,points ...Point) {
+func (r * Renderer) GlPolygon(color Color,points ...Point) []Point {
 	for i := 0; i < len(points); i++ {
 		r.GLLine(points[i], points[(i+1) % len(points)], color)		
 	}
-	// r.GlFillPolygon(color, points...)
+	return points
 }
 
 // Fills a polygon with a set of points and a given color
-func (r * Renderer) GlFillPolygon(color Color,points ...Point) {
+func (r * Renderer) GlFillPolygon(color Color,points ...Point) []Point {
+	filledPoints := []Point{}	// Points that were filled
+	filledPoints = append(filledPoints, r.GlPolygon(color, points...)...) // Draw the polygon first
 	ymin := float32(points[0].Y)
 	ymax := float32(points[0].Y)
 	xmin := float32(points[0].X)
 	xmax := float32(points[0].X)
-	// Get the minimum y and maximum y
-	for i := 0; i < len(points); i++ {		
-		if points[i].X < xmin {
-			xmin = points[i].X
-		}
-		if points[i].X > xmax {
-			xmax = points[i].X
-		}
-
-		if points[i].Y < ymin {
-			ymin = points[i].Y
-		}
-		if points[i].Y > ymax {
-			ymax = points[i].Y
-		}
-		
+	// Get the maximum and minimum values
+	for i := 0; i < len(points); i++ {
+		point := points[i]
+		ymin = float32(math.Min(float64(ymin), float64(point.Y)))
+		ymax = float32(math.Max(float64(ymax), float64(point.Y)))
+		xmin = float32(math.Min(float64(xmin), float64(point.X)))
+		xmax = float32(math.Max(float64(xmax), float64(point.X)))
 	}
-	fmt.Println(xmin,xmax,ymin,ymax)
-	for y := ymin; y <= ymax; y++ {
-		intersectingPoints := []Point{}
-		// check if the point is inside the polygon
-		for x := xmin; x <= xmax; x++ {
-			fmt.Println(x,y)
-			if r.pixels[int(x)][int(y)] != r.clearColor {
-				intersectingPoints = append(intersectingPoints, Point{float32(x),float32(y)})
-			}
-		}
-		pair := 0
-		fmt.Println(intersectingPoints)
-		
-		for pair < len(intersectingPoints) {
-			for x := intersectingPoints[pair].X; x < intersectingPoints[(pair + 1) % len(intersectingPoints)].X; x++ {
-				r.GlPoint(Point{float32(x),float32(y)}, color)
+	// Do a test for each point
+	for y := int(ymin); y <= int(ymax); y++ {
+		for x := int(xmin); x <= int(xmax); x++ {
+			pointIsInside := false
+			if (y == int(ymin) || x == int(xmin) )|| (y == int(ymax) || x == int(xmax)){
+				continue
 			}
 
-			pair ++;
+			if r.pixels[y][x] == color {
+				continue
+			}
+			for j := x; j <= int(xmax); j++ {
+				if r.pixels[y][j] == color && r.pixels[y][j + 1] != color {
+					pointIsInside = !pointIsInside
+				}
+				
+			}
+			if pointIsInside {
+				pointToFill := Point{float32(x),float32(y)}
+				filledPoints = append(filledPoints, pointToFill)
+				r.GlPoint(pointToFill, color)
+			}
 		}
 	}
+	return filledPoints
 }
 
 // ****************************************************************

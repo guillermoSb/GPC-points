@@ -31,11 +31,12 @@ func main() {
 
 	
 	// Draw polygons
-	renderer.GlPolygon(gl.Color{0,1,0}, poly1...)
-	renderer.GlPolygon(gl.Color{0,0,1}, poly2...)
-	renderer.GlPolygon(gl.Color{1,0,0}, poly3...)
-	renderer.GlPolygon(gl.Color{1,1,1}, poly4...)
-	renderer.GlPolygon(gl.Color{1,1,1}, poly5...)
+
+	renderer.GlFillPolygon(gl.Color{0,1,0}, poly1...)
+	renderer.GlFillPolygon(gl.Color{0,0,1}, poly2...)
+	renderer.GlFillPolygon(gl.Color{1,0,0}, poly3...)
+	renderer.GlFillPolygon(gl.Color{1,1,1}, poly4...)
+	renderer.GlFillPolygon(gl.Color{1,1,0}, poly5...)
 
 	
 
