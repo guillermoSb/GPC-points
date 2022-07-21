@@ -32,10 +32,13 @@ func main() {
 	
 	// Draw polygons
 
-	renderer.GlFillPolygon(gl.Color{0,1,0}, poly1...)
+	renderer.GlPolygon(gl.Color{0,1,0}, poly1...)
+	renderer.GLFloodFill(200,390,gl.Color{0,1,0},)
 	renderer.GlFillPolygon(gl.Color{0,0,1}, poly2...)
 	renderer.GlFillPolygon(gl.Color{1,0,0}, poly3...)
-	renderer.GlFillPolygon(gl.Color{1,1,1}, poly4...)
+	renderer.GlPolygon(gl.Color{1,1,1}, poly4...)
+	renderer.GLFloodFill(425,177,gl.Color{1,0.5,0.5},)
+
 	renderer.GlFillPolygon(gl.Color{1,1,0}, poly5...)
 
 	

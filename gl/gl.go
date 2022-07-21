@@ -173,7 +173,7 @@ func (r *Renderer) GLLine(v0, v1 Point, colors ...Color) {
 	dx = (float64(x1) - float64(x0))
 
 	offset := 0.0
-	limit := 0.5
+	limit := 0.4
 
 	
 	m := (dy)/(dx)
@@ -202,6 +202,30 @@ func (r *Renderer) GLLine(v0, v1 Point, colors ...Color) {
 		
 	}
 }
+
+func (r * Renderer) GLFloodFill(x int, y int, newColor Color) {
+	oldColor := r.pixels[y][x]
+	if oldColor == newColor {
+		return
+	}
+	r.Dfs(x,y,oldColor, newColor)
+}
+
+func (r * Renderer) Dfs(x int, y int, oldColor, newColor Color) {
+	m := len(r.pixels)
+	n := len(r.pixels[0])
+	if x < 0 || x >= n || y < 0 || y >= m || r.pixels[y][x] != oldColor {
+		return
+	} else {
+		r.pixels[y][x] = newColor
+		r.Dfs(x + 1, y, oldColor, newColor)
+		r.Dfs(x - 1, y, oldColor, newColor)
+		r.Dfs(x , y + 1, oldColor, newColor)
+		r.Dfs(x , y - 1, oldColor, newColor)
+	}
+	
+}
+
 
 // Finishes rendering the image
 // Parameters:
@@ -275,12 +299,11 @@ func (r * Renderer) GlFillPolygon(color Color,points ...Point) []Point {
 					edgesRight += 1
 				}
 			}
-			
 			if  edgesRight % 2 != 0 {
 				pointToFill := Point{float32(x),float32(y)}
 				filledPoints = append(filledPoints, pointToFill)
 				r.GlPoint(pointToFill, color)
-			}
+			} 
 		}
 		
 	}
