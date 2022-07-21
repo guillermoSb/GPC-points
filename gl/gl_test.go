@@ -35,6 +35,21 @@ func Test_can_fill_complex_polygon(t *testing.T) {
 	// Assert
 }
 
+func Test_pointIsInSlice_point_in_slice_returns_true(t *testing.T) {
+	// Arrange
+	points := []Point{{1,1}, {1,0}, {1,0}}
+	// Act
+	result := pointIsInSlice(points, Point{float32(1),float32(1)})
+	assert.True(t, result)
+}
+func Test_pointIsInSlice_point_in_slice_returns_false(t *testing.T) {
+	// Arrange
+	points := []Point{{1,1}, {1,0}, {1,0}}
+	// Act
+	result := pointIsInSlice(points, Point{float32(2),float32(2)})
+	assert.False(t, result)
+}
+
 func Test_glGetEdges_with_one_edge_returns_one(t *testing.T) {
 	// Arrange
 	pixels1 := []Color{{0,0,0},{1,0,0},{1,0,0},{0,0,0}}
@@ -43,14 +58,13 @@ func Test_glGetEdges_with_one_edge_returns_one(t *testing.T) {
 	pixels4 := []Color{{1,0,0},{0,0,0},{0,0,0}}
 	pixels5 := []Color{{1,0,0},{0,0,0},{1,0,0}}
 	pixels6 := []Color{{1,0,0},{1,0,0},{1,0,0}}
-	clearColor := Color{0,0,0}
 	// Act
-	edges1 := glGetEdges(pixels1, clearColor)
-	edges2 := glGetEdges(pixels2, clearColor)
-	edges3 := glGetEdges(pixels3, clearColor)
-	edges4 := glGetEdges(pixels4, clearColor)
-	edges5 := glGetEdges(pixels5, clearColor)
-	edges6 := glGetEdges(pixels6, clearColor)
+	edges1 := glGetEdges(pixels1, Color{1,0,0})
+	edges2 := glGetEdges(pixels2, Color{1,0,0})
+	edges3 := glGetEdges(pixels3, Color{0,0,1})
+	edges4 := glGetEdges(pixels4, Color{1,0,0})
+	edges5 := glGetEdges(pixels5, Color{1,0,0})
+	edges6 := glGetEdges(pixels6, Color{1,0,0})
 	// Assert
 	assert.Equal(t, 1, edges1)
 	assert.Equal(t, 1, edges2)

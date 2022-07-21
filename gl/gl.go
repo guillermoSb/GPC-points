@@ -256,36 +256,25 @@ func (r * Renderer) GlFillPolygon(color Color,points ...Point) []Point {
 	xmin,xmax,ymin,ymax := glGetMaxMinDimensions(points)
 	// Do a test for each point
 	for y := int(ymin); y <= int(ymax); y++ {
+		if glGetEdges(r.pixels[y], color) <= 1 {
+			continue
+		}
 		for x := int(xmin); x <= int(xmax); x++ {
 			edgesRight := 0
-			// edgesLeft := 0
 			if (y == int(ymin) || x == int(xmin) )|| (y == int(ymax) || x == int(xmax)){
 				continue
 			}
-
-			if glGetEdges(r.pixels[y], r.clearColor) <= 1 {
-				continue
-			}
-
 			if (r.pixels[y][x] == color) {
 				continue
 			}
-
 			if r.pixels[y][x] == color {
 				continue
 			}
-
 			for j := x; j <= int(xmax); j++ {
 				if r.pixels[y][j] == color && r.pixels[y][j + 1] != color {
 					edgesRight += 1
 				}
 			}
-			
-			// for j := int(xmin); j < x; j++ {
-			// 	if r.pixels[y][j] == color && r.pixels[y][j+1] != color {
-			// 		edgesLeft += 1
-			// 	}
-			// }
 			
 			if  edgesRight % 2 != 0 {
 				pointToFill := Point{float32(x),float32(y)}
@@ -298,7 +287,7 @@ func (r * Renderer) GlFillPolygon(color Color,points ...Point) []Point {
 	return filledPoints
 }
 
-func glGetEdges(colors []Color, clearColor Color) int {
+func glGetEdges(colors []Color, color Color) int {
 	edges := 0
 	// If the array is empty, return 0
 	if (len(colors) <= 0) {
@@ -307,12 +296,13 @@ func glGetEdges(colors []Color, clearColor Color) int {
 	previousColor := colors[0]
 	for i := 0; i < len(colors); i++ {
 		// If the first pixel is already different, add it
-		if i == 0 && colors[i] != clearColor {
+		if i == 0 && colors[i] == color {
 			edges += 1
 			continue
 		}
 		// Count the edges
-		if colors[i] != previousColor && colors[i] != clearColor {
+		if colors[i] != previousColor && colors[i] == color {
+			
 			edges += 1
 		}
 		previousColor = colors[i]	// Set the previous pixel
@@ -333,6 +323,16 @@ func glGetMaxMinDimensions(points []Point) (float32, float32, float32, float32) 
 		xmax = float32(math.Max(float64(xmax), float64(point.X)))
 	}
 	return xmin,xmax,ymin,ymax
+}
+
+// Finds if a point is inside a slice of points
+func pointIsInSlice(points []Point, point Point) bool {
+	for _, v := range points {
+		if v == point {
+			return true
+		}
+	}
+	return false
 }
 
 // ****************************************************************
