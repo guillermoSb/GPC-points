@@ -3,6 +3,7 @@ package gl
 import (
 	"encoding/binary"
 	"log"
+	"math"
 	"os"
 )
 
@@ -79,8 +80,11 @@ func (r * Renderer) GlClear() {
 // Draws a point on the renderer
 // Parameters:
 // - point: the point to draw
-func (r * Renderer) GlPoint(point Point) {
+func (r * Renderer) GlPoint(point Point, colors ...Color) {
 	// Get the row for the point
+	if len(colors) > 0 {
+		r.GlColor(colors[0].R, colors[0].G, colors[0].B)
+	}
 	if (point.X >= float32(r.width) || point.X < 0) || (point.Y >= float32(r.height) || point.Y < 0){
 		return;
 	}
@@ -123,6 +127,106 @@ func (r *Renderer) GlClearViewport(color Color) {
 	}
 }
 
+// Draws a line on the viewport using the bresenham line drawing algorithm/
+// Takes two vectors to draw and a list of colors. The first value is going to be used.
+func (r *Renderer) GLLine(v0, v1 Point, colors ...Color) {
+	x0 := v0.X
+	x1 := v1.X
+	y0 := v0.Y
+	y1 := v1.Y
+	
+	
+
+	// Dibujar un punto si ambos valores son iguales
+	if x0 == x1 && y0 == y1{
+		r.GlPoint(v0, colors...)
+		return
+	}
+	
+	dy := math.Abs(float64(y1) - float64(y0))
+	dx := math.Abs(float64(x1) - float64(x0))
+
+	steep := dy > dx
+	// Tiene pendiente mayor a 1 o menor a -1, intercambiar las x por las y, y se dibuja una línea vertical
+	if steep {
+		tempx0 := x0
+		tempx1 := x1
+		tempy0 := y0
+		tempy1 := y1
+		x0 = tempy0
+		y0 = tempx0
+		x1 = tempy1
+		y1 = tempx1
+	}
+	// Si el punto inicial en X, es mayor que el punto final X, intercambiar los puntos para siempre dibujar de iz a derecha
+	if x0 > x1 {
+		tempx0 := x0
+		tempx1 := x1
+		tempy0 := y0
+		tempy1 := y1
+		x0 = tempx1
+		x1 = tempx0
+		y0 = tempy1
+		y1 = tempy0
+	}
+	dy = (float64(y1) - float64(y0))
+	dx = (float64(x1) - float64(x0))
+
+	offset := 0.0
+	limit := 0.4
+
+	
+	m := (dy)/(dx)
+	y := y0
+	
+	// fmt.Println("x0: ", x0, "x1: ", x1, "y0: ", y0, "y1: ", y1, "m", m)
+	for x := x0; x <= x1; x++ {
+		if steep {
+			// Dibujar de manera vertical
+			r.GlPoint(Point{y,x}, colors...)
+		} else {
+			// Dibujar de manera horizontal	
+			r.GlPoint(Point{x,y}, colors...)
+		}
+		
+		offset += m
+		// Dibujar dependiendo si la linea va para abajo o para arriba.
+		if math.Abs(offset) >= limit {
+			if y0 < y1 {
+				y += 1
+			} else {
+				y -= 1
+			}
+			limit += 1
+		}
+		
+	}
+}
+
+func (r * Renderer) GLFloodFill(x int, y int, newColor Color) {
+	oldColor := r.pixels[y][x]
+	if oldColor == newColor {
+		return
+	}
+	r.Dfs(x,y,oldColor, newColor)
+}
+
+func (r * Renderer) Dfs(x int, y int, oldColor, newColor Color) {
+	m := len(r.pixels)
+	n := len(r.pixels[0])
+	if x < 0 || x >= n || y < 0 || y >= m || r.pixels[y][x] != oldColor {
+		return
+	} else {
+		r.pixels[y][x] = newColor
+		r.Dfs(x + 1, y, oldColor, newColor)
+		r.Dfs(x - 1, y, oldColor, newColor)
+		r.Dfs(x , y + 1, oldColor, newColor)
+		r.Dfs(x , y - 1, oldColor, newColor)
+	}
+	
+}
+
+
 // Finishes rendering the image
 // Parameters:
 // - fileName: Name of the file to output.
@@ -159,6 +263,99 @@ func (r * Renderer) GlFinish(fileName string) {
 			f.Write(r.pixels[i][j].bytes())
 		}
 	}
+}
+
+// Draws a polygon with a set of points and a given color.
+func (r * Renderer) GlPolygon(color Color,points ...Point) []Point {
+	for i := 0; i < len(points); i++ {
+		r.GLLine(points[i], points[(i+1) % len(points)], color)		
+	}
+	return points
+}
+
+// Fills a polygon with a set of points and a given color
+func (r * Renderer) GlFillPolygon(color Color,points ...Point) []Point {
+	filledPoints := []Point{}	// Points that were filled
+	filledPoints = append(filledPoints, r.GlPolygon(color, points...)...) // Draw the polygon first
+	xmin,xmax,ymin,ymax := glGetMaxMinDimensions(points)
+	// Do a test for each point
+	for y := int(ymin); y <= int(ymax); y++ {
+		if glGetEdges(r.pixels[y], color) <= 1 {
+			continue
+		}
+		for x := int(xmin); x <= int(xmax); x++ {
+			edgesRight := 0
+			if (y == int(ymin) || x == int(xmin) )|| (y == int(ymax) || x == int(xmax)){
+				continue
+			}
+			if (r.pixels[y][x] == color) {
+				continue
+			}
+			if r.pixels[y][x] == color {
+				continue
+			}
+			for j := x; j <= int(xmax); j++ {
+				if r.pixels[y][j] == color && r.pixels[y][j + 1] != color {
+					edgesRight += 1
+				}
+			}
+			if  edgesRight % 2 != 0 {
+				pointToFill := Point{float32(x),float32(y)}
+				filledPoints = append(filledPoints, pointToFill)
+				r.GlPoint(pointToFill, color)
+			} 
+		}
+		
+	}
+	return filledPoints
+}
+
+func glGetEdges(colors []Color, color Color) int {
+	edges := 0
+	// If the array is empty, return 0
+	if (len(colors) <= 0) {
+		return edges
+	}
+	previousColor := colors[0]
+	for i := 0; i < len(colors); i++ {
+		// If the first pixel is already different, add it
+		if i == 0 && colors[i] == color {
+			edges += 1
+			continue
+		}
+		// Count the edges
+		if colors[i] != previousColor && colors[i] == color {
+			
+			edges += 1
+		}
+		previousColor = colors[i]	// Set the previous pixel
+	}
+	return edges
+}
+
+// Gets the minimum and maximum values for each axis for a set of points
+func glGetMaxMinDimensions(points []Point) (float32, float32, float32, float32) {
+	// Variables for dimensions
+	ymin,ymax,xmin,xmax := points[0].Y, points[0].Y, points[0].X, points[0].X
+	// Calculate the maximum and minimum values
+	for i := 0; i < len(points); i++ {
+		point := points[i]
+		ymin = float32(math.Min(float64(ymin), float64(point.Y)))
+		ymax = float32(math.Max(float64(ymax), float64(point.Y)))
+		xmin = float32(math.Min(float64(xmin), float64(point.X)))
+		xmax = float32(math.Max(float64(xmax), float64(point.X)))
+	}
+	return xmin,xmax,ymin,ymax
+}
+
+// Finds if a point is inside a slice of points
+func pointIsInSlice(points []Point, point Point) bool {
+	for _, v := range points {
+		if v == point {
+			return true
+		}
+	}
+	return false
 }
 
 // ****************************************************************
