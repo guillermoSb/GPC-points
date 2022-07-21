@@ -35,6 +35,44 @@ func Test_can_fill_complex_polygon(t *testing.T) {
 	// Assert
 }
 
+func Test_glGetEdges_with_one_edge_returns_one(t *testing.T) {
+	// Arrange
+	pixels1 := []Color{{0,0,0},{1,0,0},{1,0,0},{0,0,0}}
+	pixels2 := []Color{{0,0,0},{1,0,0},{0,0,0},{0,0,0}}
+	pixels3 := []Color{{0,0,0},{0,0,0},{0,0,1}}
+	pixels4 := []Color{{1,0,0},{0,0,0},{0,0,0}}
+	pixels5 := []Color{{1,0,0},{0,0,0},{1,0,0}}
+	pixels6 := []Color{{1,0,0},{1,0,0},{1,0,0}}
+	clearColor := Color{0,0,0}
+	// Act
+	edges1 := glGetEdges(pixels1, clearColor)
+	edges2 := glGetEdges(pixels2, clearColor)
+	edges3 := glGetEdges(pixels3, clearColor)
+	edges4 := glGetEdges(pixels4, clearColor)
+	edges5 := glGetEdges(pixels5, clearColor)
+	edges6 := glGetEdges(pixels6, clearColor)
+	// Assert
+	assert.Equal(t, 1, edges1)
+	assert.Equal(t, 1, edges2)
+	assert.Equal(t, 1, edges3)
+	assert.Equal(t, 1, edges4)
+	assert.Equal(t, 2, edges5)
+	assert.Equal(t, 1, edges6)
+}
+
+func Test_glGetMaxMinDimensions_returns_accurate_information(t *testing.T) {
+	// Arrange
+	points := []Point{{5,4}, {10, 4}, {5,2}}
+	// Act
+	minX,maxX,minY,maxY := glGetMaxMinDimensions(points)
+	// Assert
+	assert.Equal(t, float32(2.0), minY)
+	assert.Equal(t, float32(4.0), maxY)
+	assert.Equal(t, float32(5.0), minX)
+	assert.Equal(t, float32(10.0), maxX)
+
+}
+
 
 
 func createTestingRenderer(vWidth, vHeight int) Renderer {

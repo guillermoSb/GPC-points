@@ -253,11 +253,78 @@ func (r * Renderer) GlPolygon(color Color,points ...Point) []Point {
 func (r * Renderer) GlFillPolygon(color Color,points ...Point) []Point {
 	filledPoints := []Point{}	// Points that were filled
 	filledPoints = append(filledPoints, r.GlPolygon(color, points...)...) // Draw the polygon first
-	ymin := float32(points[0].Y)
-	ymax := float32(points[0].Y)
-	xmin := float32(points[0].X)
-	xmax := float32(points[0].X)
-	// Get the maximum and minimum values
+	xmin,xmax,ymin,ymax := glGetMaxMinDimensions(points)
+	// Do a test for each point
+	for y := int(ymin); y <= int(ymax); y++ {
+		for x := int(xmin); x <= int(xmax); x++ {
+			edgesRight := 0
+			// edgesLeft := 0
+			if (y == int(ymin) || x == int(xmin) )|| (y == int(ymax) || x == int(xmax)){
+				continue
+			}
+
+			if glGetEdges(r.pixels[y], r.clearColor) <= 1 {
+				continue
+			}
+
+			if (r.pixels[y][x] == color) {
+				continue
+			}
+
+			if r.pixels[y][x] == color {
+				continue
+			}
+
+			for j := x; j <= int(xmax); j++ {
+				if r.pixels[y][j] == color && r.pixels[y][j + 1] != color {
+					edgesRight += 1
+				}
+			}
+			
+			// for j := int(xmin); j < x; j++ {
+			// 	if r.pixels[y][j] == color && r.pixels[y][j+1] != color {
+			// 		edgesLeft += 1
+			// 	}
+			// }
+			
+			if  edgesRight % 2 != 0 {
+				pointToFill := Point{float32(x),float32(y)}
+				filledPoints = append(filledPoints, pointToFill)
+				r.GlPoint(pointToFill, color)
+			}
+		}
+		
+	}
+	return filledPoints
+}
+
+func glGetEdges(colors []Color, clearColor Color) int {
+	edges := 0
+	// If the array is empty, return 0
+	if (len(colors) <= 0) {
+		return edges
+	}
+	previousColor := colors[0]
+	for i := 0; i < len(colors); i++ {
+		// If the first pixel is already different, add it
+		if i == 0 && colors[i] != clearColor {
+			edges += 1
+			continue
+		}
+		// Count the edges
+		if colors[i] != previousColor && colors[i] != clearColor {
+			edges += 1
+		}
+		previousColor = colors[i]	// Set the previous pixel
+	}
+	return edges
+}
+
+// Gets the minimum and maximum values for each axis for a set of points
+func glGetMaxMinDimensions(points []Point) (float32, float32, float32, float32) {
+	// Variables for dimensions
+	ymin,ymax,xmin,xmax := points[0].Y, points[0].Y, points[0].X, points[0].X
+	// Calculate the maximum and minimum values
 	for i := 0; i < len(points); i++ {
 		point := points[i]
 		ymin = float32(math.Min(float64(ymin), float64(point.Y)))
@@ -265,31 +332,7 @@ func (r * Renderer) GlFillPolygon(color Color,points ...Point) []Point {
 		xmin = float32(math.Min(float64(xmin), float64(point.X)))
 		xmax = float32(math.Max(float64(xmax), float64(point.X)))
 	}
-	// Do a test for each point
-	for y := int(ymin); y <= int(ymax); y++ {
-		for x := int(xmin); x <= int(xmax); x++ {
-			pointIsInside := false
-			if (y == int(ymin) || x == int(xmin) )|| (y == int(ymax) || x == int(xmax)){
-				continue
-			}
-
-			if r.pixels[y][x] == color {
-				continue
-			}
-			for j := x; j <= int(xmax); j++ {
-				if r.pixels[y][j] == color && r.pixels[y][j + 1] != color {
-					pointIsInside = !pointIsInside
-				}
-				
-			}
-			if pointIsInside {
-				pointToFill := Point{float32(x),float32(y)}
-				filledPoints = append(filledPoints, pointToFill)
-				r.GlPoint(pointToFill, color)
-			}
-		}
-	}
-	return filledPoints
+	return xmin,xmax,ymin,ymax
 }
 
 // ****************************************************************
