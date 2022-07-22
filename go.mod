@@ -1,4 +1,4 @@
-module guillermoSb/glDots
+module guillermoSb/glLibrary
 
 go 1.17
 
