@@ -12,8 +12,8 @@ Librerías Utilizadas:
 - [log](https://pkg.go.dev/log) para imprimir mensajes de error y terminar el programa.
 - [encoding/binary](https://pkg.go.dev/encoding/binary) para trabajar con numeros binarios
 - [math](https://pkg.go.dev/math) para trabajar con funciones matemáticas como redondear, numeros aleatorios, etc.
-## Ejercicio 01: Dibujando un punto.
-Output: Una imagen en donde se dibujan estrellas fuera del viewport y adentro del viewport se dibujan pixeles al azar del mismo color. La imagen se puede ver en el archivo `out.bmp`
+## Ejercicio: Llenando cualquier poligono.
+Output: Una imagen con poligonos rellenados de diferente color. La imagen se puede ver en el archivo `out.bmp`
 
 ![](out.bmp)
 
