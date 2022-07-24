@@ -31,9 +31,9 @@ func main() {
 	
 	// Draw polygons
 
-	renderer.GlFillPolygonCrazy(gl.Color{0,1,0}, poly1...)
-	renderer.GlFillPolygonCrazy(gl.Color{0,0,1}, poly2...)
-	renderer.GlFillPolygonCrazy(gl.Color{1,0,0}, poly3...)
+	renderer.GlFillPolygon(gl.Color{0,1,0}, poly1...)
+	renderer.GlFillPolygon(gl.Color{0,0,1}, poly2...)
+	renderer.GlFillPolygon(gl.Color{1,0,0}, poly3...)
 	renderer.GlFillPolygon(gl.Color{1,1,1}, poly4...)
 	renderer.GlFillPolygon(gl.Color{1,0,1}, poly5...)
 	// renderer.GlFillPolygon(gl.Color{1,1,0}, poly5...)
