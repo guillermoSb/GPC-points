@@ -2,6 +2,7 @@ package gl
 
 import (
 	"encoding/binary"
+	"guillermoSb/glLibrary/numg"
 	"log"
 	"math"
 	"math/rand"
@@ -313,6 +314,47 @@ func (r * Renderer) GlPolygon(color Color,points ...V2) []V2 {
 	return points
 }
 
+func (r * Renderer) GlLoadModel(filename string,translate, rotate, scale V3) {
+	model := Obj{}
+	model = model.InitObj(filename)
+	modelMatrix := glCreateObjectMatrix(translate, rotate, scale)
+	for _, face := range model.Faces {
+		vertCount := len(face)
+		for i := 0; i < vertCount; i++ {
+			v0 := model.Vertices[face[i][0] - 1]
+			v1 := model.Vertices[face[(i + 1) % vertCount][0] - 1]
+			p1 := glTransform(V3{v0[0], v0[1], v0[2]}, modelMatrix)
+			p2 := glTransform(V3{v1[0], v1[1], v1[2]}, modelMatrix)
+			
+			r.GLLine(V2{p1.X, p1.Y}, V2{p2.X, p2.Y}, Color{rand.Float32(), rand.Float32(), rand.Float32()})	
+		}
+	}
+
+}
+
+func glTransform(vertex V3, matrix numg.M) V3 {
+	v := V4{vertex.X, vertex.Y, vertex.Z,1}
+	vt, _ := numg.MultiplyMatrices(matrix, numg.M{{v.X}, {v.Y}, {v.Z},{v.W}})
+	vf := V3{vt[0][0]/vt[3][0], vt[1][0]/vt[3][0], vt[2][0]/vt[3][0]}
+	return vf
+}
+
+func glCreateObjectMatrix(translate, rotate, scale V3) numg.M {
+	translateMatrix, _ := numg.Identity(4)
+	translateMatrix[0][3] = translate.X
+	translateMatrix[1][3] = translate.Y
+	translateMatrix[2][3] = translate.Z
+
+	scaleMatrix, _ := numg.Identity(4)
+	scaleMatrix[0][0] = scale.X
+	scaleMatrix[1][1] = scale.Y
+	scaleMatrix[2][2] = scale.Z
+
+	result, _ := numg.MultiplyMatrices(translateMatrix, scaleMatrix)
+	return result
+
+}
+
 
 func glGetEdges(colors []Color, color Color) int {
 	edges := 0
@@ -362,6 +404,8 @@ func pointIsInSlice(points []V2, point V2) bool {
 	return false
 }
 
+
+
 // ****************************************************************
 // Utils and Structures
 // ****************************************************************
@@ -369,6 +413,19 @@ func pointIsInSlice(points []V2, point V2) bool {
 type V2 struct {
 	X float32
 	Y float32
+}
+
+type V3 struct {
+	X float32
+	Y float32
+	Z float32
+}
+
+type V4 struct {
+	X float32
+	Y float32
+	Z float32
+	W float32
 }
 
 

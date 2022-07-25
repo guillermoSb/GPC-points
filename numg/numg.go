@@ -41,6 +41,27 @@ func MultiplyMatrices(a,b M) (M, error)  {
 	return c, nil
 }
 
+// Create an identity matrix of n size
+func Identity(n int) (M, error) {
+	if n <= 0 {
+		return nil, errors.New(InvalidMatrixSizeForCreation)
+	}
+	r := M{}
+	for i := 0; i < n; i++ {
+		row := []float32{}
+		for j := 0; j < n; j++ {
+			if i == j {
+				row = append(row, 1)
+			} else {
+				row = append(row,0)
+			}
+		}
+		r = append(r,row)
+	}
+
+	return r, nil
+}
+
 // Multiplies a matrix by a scalar
 // Returns the result of the multiplication
 func MultiplyMatrixByScalar(a M, c float32) (M, error) {
@@ -65,3 +86,4 @@ func MultiplyMatrixByScalar(a M, c float32) (M, error) {
 
 // Error Strings
 const InvalidMatrixSizeErrorString = "Invalid size for matrix multiplicaiton."
+const InvalidMatrixSizeForCreation = "Invalid size for matrix creation."
