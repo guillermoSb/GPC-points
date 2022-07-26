@@ -63,3 +63,18 @@ func Test_cant_multily_empty_matrix_by_scalar(t *testing.T) {
 	// Assert
 	assert.Error(t, err, InvalidMatrixSizeErrorString)
 }
+
+
+// Identity Matrix
+func Test_generates_identity_matrix(t *testing.T) {
+	// Act
+	m, _ := Identity(4)	
+	// Assert
+	for i := 0; i < len(m); i++ {
+		for j := 0; j < len(m); j++ {
+			if i == j {
+				assert.Equal(t, float32(1), m[i][j])
+			}
+		}
+	}
+}

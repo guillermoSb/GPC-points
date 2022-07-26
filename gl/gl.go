@@ -252,7 +252,7 @@ func (r * Renderer) fillPoint(point V2, color Color, oldColor Color) []V2 {
 	m := r.width
 	n := r.height
 	points := []V2{}
-	if !(point.X < 0 || point.X > float32(m) || point.Y < 0 || point.Y > float32(n) || r.pixels[int(point.Y)][int(point.X)] != oldColor) {
+	if !(point.X < 0 || point.X > float32(m - 1) || point.Y < 0 || point.Y > float32(n - 1) || r.pixels[int(point.Y)][int(point.X)] != oldColor) {
 		r.GlPoint(point, color)
 		points = append(points, point)
 		top := V2{point.X, point.Y + 1}
@@ -320,18 +320,20 @@ func (r * Renderer) GlLoadModel(filename string,translate, rotate, scale V3) {
 	modelMatrix := glCreateObjectMatrix(translate, rotate, scale)
 	for _, face := range model.Faces {
 		vertCount := len(face)
+		vertices := []V2{}
 		for i := 0; i < vertCount; i++ {
 			v0 := model.Vertices[face[i][0] - 1]
 			v1 := model.Vertices[face[(i + 1) % vertCount][0] - 1]
 			p1 := glTransform(V3{v0[0], v0[1], v0[2]}, modelMatrix)
 			p2 := glTransform(V3{v1[0], v1[1], v1[2]}, modelMatrix)
-			
-			r.GLLine(V2{p1.X, p1.Y}, V2{p2.X, p2.Y}, Color{rand.Float32(), rand.Float32(), rand.Float32()})	
+			vertices = append(vertices, V2{p1.X, p1.Y}, V2{p2.X, p2.Y})
 		}
+		r.GlFillPolygon(Color{rand.Float32(), rand.Float32(), rand.Float32()}, vertices...)
 	}
 
 }
 
+// Transforms a vertex using a transformation matrix
 func glTransform(vertex V3, matrix numg.M) V3 {
 	v := V4{vertex.X, vertex.Y, vertex.Z,1}
 	vt, _ := numg.MultiplyMatrices(matrix, numg.M{{v.X}, {v.Y}, {v.Z},{v.W}})
@@ -339,6 +341,7 @@ func glTransform(vertex V3, matrix numg.M) V3 {
 	return vf
 }
 
+// Creates a transformation matrix using the translation, rotation and scaling parameters.
 func glCreateObjectMatrix(translate, rotate, scale V3) numg.M {
 	translateMatrix, _ := numg.Identity(4)
 	translateMatrix[0][3] = translate.X
@@ -350,7 +353,11 @@ func glCreateObjectMatrix(translate, rotate, scale V3) numg.M {
 	scaleMatrix[1][1] = scale.Y
 	scaleMatrix[2][2] = scale.Z
 
-	result, _ := numg.MultiplyMatrices(translateMatrix, scaleMatrix)
+	result, err := numg.MultiplyMatrices(translateMatrix, scaleMatrix)
+	// Validate the result
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	return result
 
 }
