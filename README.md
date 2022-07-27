@@ -1,5 +1,8 @@
 # Graficas Por Computadora - Renderer
-
+## Capacidades del Renderer
+- Dibujar Puntos.
+- Dibujar y llenar poligonos.
+- Importar modelos 3D (.obj).
 ## Como utilizar el Renderer
 El proyecto tiene un archivo `main.go` el cual es el entrypoint para todo el proyecto. En el se encuentra el uso de el paquete `gl`.
 
@@ -14,6 +17,10 @@ Librerías Utilizadas:
 - [math](https://pkg.go.dev/math) para trabajar con funciones matemáticas como redondear, numeros aleatorios, etc.
 ## Ejercicio: Llenando cualquier poligono.
 Output: Una imagen con poligonos rellenados de diferente color. La imagen se puede ver en el archivo `out.bmp`
+
+## Ejercicio: Importar OBJ y llenar triangulos
+Output: Una imagen con el `Space Shuttle` importado y llenado con colores al azar.
+
 
 ![](out.bmp)
 
