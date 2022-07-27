@@ -42,6 +42,7 @@ func main() {
 	}
 	// Object
 	renderer.GlLoadModel("shuttle.obj", gl.V3{float32(width)/2,float32(height)/2,1}, gl.V3{50,50,50}, gl.V3{1,1,0})
+	renderer.GlLoadModel("sphere.obj", gl.V3{float32(width)/2,0,1}, gl.V3{50,50,50}, gl.V3{500,500,0})
 	// renderer.GlLoadModel("sphere.obj", gl.V3{float32(width),float32(height),1}, gl.V3{50,50,50}, gl.V3{250,250,200})
 	// renderer.GlLoadModel("sphere.obj", gl.V3{float32(0),float32(0),1}, gl.V3{50,50,50}, gl.V3{250,250,200})
 	// Triangle
