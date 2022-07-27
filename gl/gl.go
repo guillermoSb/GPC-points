@@ -319,18 +319,85 @@ func (r * Renderer) GlLoadModel(filename string,translate, rotate, scale V3) {
 	model = model.InitObj(filename)
 	modelMatrix := glCreateObjectMatrix(translate, rotate, scale)
 	for _, face := range model.Faces {
-		vertCount := len(face)
-		vertices := []V2{}
-		for i := 0; i < vertCount; i++ {
-			v0 := model.Vertices[face[i][0] - 1]
-			v1 := model.Vertices[face[(i + 1) % vertCount][0] - 1]
-			p1 := glTransform(V3{v0[0], v0[1], v0[2]}, modelMatrix)
-			p2 := glTransform(V3{v1[0], v1[1], v1[2]}, modelMatrix)
-			vertices = append(vertices, V2{p1.X, p1.Y}, V2{p2.X, p2.Y})
-		}
-		r.GlFillPolygon(Color{rand.Float32(), rand.Float32(), rand.Float32()}, vertices...)
+		// vertCount := len(face)
+		// vertices := []V2{}
+		// for i := 0; i < vertCount; i++ {
+		// 	v0 := model.Vertices[face[i][0] - 1]
+		// 	p1 := glTransform(V3{v0[0], v0[1], v0[2]}, modelMatrix)
+		// 	vertices = append(vertices, V2{p1.X, p1.Y})
+		// }
+		v0 := model.Vertices[face[0][0] - 1]
+		v1 := model.Vertices[face[1][0] - 1]
+		v2 := model.Vertices[face[2][0] - 1]
+		
+		vA := glTransform(V3{v0[0], v0[1], v0[2]}, modelMatrix)
+		vB := glTransform(V3{v1[0], v1[1], v1[2]}, modelMatrix)
+		vC := glTransform(V3{v2[0], v2[1], v2[2]}, modelMatrix)
+
+		r.GlTriangleFillStd(Color{rand.Float32(), rand.Float32(), rand.Float32()}, V2{vA.X, vA.Y}, V2{vB.X, vB.Y}, V2{vC.X, vC.Y})
+		
 	}
 
+}
+
+func (r *Renderer) GlTriangleFillStd(color Color, A,B,C V2)  {
+	// Step 1: A should be at the top
+	if A.Y < B.Y {
+		A,B = B,A
+	}
+	if A.Y < C.Y {
+		A,C = C,A
+	}
+	if B.Y < C.Y {
+		B,C = C,B
+	}
+
+	// Step 2: Draw Polygon
+	r.GlPolygon(color, A,B,C)
+
+	if B.Y == C.Y{
+		// Flat part below
+		r.flatBottom(A,B,C, color)
+	} else if A.Y == B.Y {
+		// Flat part above
+		r.flatTop(A,B,C, color)
+	} else {
+		// Triangle is not regular, divide and draw two type of triangles
+		D := V2{float32(int(A.X + ((B.Y - A.Y) / (C.Y - A.Y)) * (C.X - A.X))), B.Y}
+		r.flatBottom(A,B,D,color)
+		r.flatTop(B,D,C, color)
+	}
+	
+}
+
+func (r * Renderer) flatBottom(vA,vB,vC V2, color Color) {
+	// Slope between A and B
+	mBA :=(vB.X - vA.X) / (vB.Y - vA.Y)
+	mCA :=(vC.X - vA.X) / (vC.Y - vA.Y)
+
+	// Start drawing points from bottom
+	x0 := vB.X
+	x1 := vC.X
+	for y := vB.Y; y <= vA.Y; y++ {
+		r.GLLine(V2{float32(int(x0)),y}, V2{float32(int(x1)),y}, color)
+		x0 += mBA
+		x1 += mCA
+	}
+}
+
+func (r * Renderer) flatTop(vA,vB,vC V2, color Color) {
+	// Slope between A and B
+	mCA :=(vC.X - vA.X) / (vC.Y - vA.Y)
+	mCB :=(vC.X - vB.X) / (vC.Y - vB.Y)
+
+	// Start drawing points from bottom
+	x0 := vA.X
+	x1 := vB.X
+	for y := vA.Y; y >= vC.Y; y-- {
+		r.GLLine(V2{float32(int(x0)),y}, V2{float32(int(x1)),y}, color)
+		x0 -= mCA
+		x1 -= mCB
+	}
 }
 
 // Transforms a vertex using a transformation matrix
