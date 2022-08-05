@@ -2,10 +2,13 @@ package numg
 
 import (
 	"errors"
+	"math"
 )
 
 // Matrix Definition
 type M [][]float32
+type V2 [2]float32
+type V3 [3]float32
 
 
 
@@ -77,6 +80,22 @@ func MultiplyMatrixByScalar(a M, c float32) (M, error) {
 		}
 	}
 	return a, nil
+}
+
+
+func Subtract(A,B V2) V2{
+	newV2 := V2{0,0}
+	newV2[0] = B[0] - A[0]
+	newV2[1] = B[1] - A[1]
+	return newV2
+}
+
+func Cross(A,B V2) V3 {
+	return V3{0,0,(A[0]*B[1])-(A[1]*B[0]) }
+}
+
+func Norm(A V3) float64 {
+	return math.Sqrt(math.Pow(float64(A[0]),2.0) + math.Pow(float64(A[1]),2.0) + math.Pow(float64(A[2]),2.0))
 }
 
 // TODO: Transpose matrix

@@ -78,3 +78,22 @@ func Test_generates_identity_matrix(t *testing.T) {
 		}
 	}
 }
+
+func Test_calculates_cross_product(t *testing.T) {
+	// Arrange
+	A := V2{13,8}
+	B := V2{-1,2}
+	// Act
+	C := Cross(A,B)
+	// Assert
+	assert.Equal(t, float32(34.0), C[2])
+}
+
+func Test_calcualtes_vector_norm(t *testing.T) {
+	// Arrange
+	A := V3{2,2,1}
+	// Act
+	r := Norm(A)
+	// Assert
+	assert.Equal(t, 3.0, r)
+}

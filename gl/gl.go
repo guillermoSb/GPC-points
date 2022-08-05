@@ -333,13 +333,60 @@ func (r * Renderer) GlLoadModel(filename string,translate, rotate, scale V3) {
 		vA := glTransform(V3{v0[0], v0[1], v0[2]}, modelMatrix)
 		vB := glTransform(V3{v1[0], v1[1], v1[2]}, modelMatrix)
 		vC := glTransform(V3{v2[0], v2[1], v2[2]}, modelMatrix)
-
-		r.GlTriangleFillStd(Color{rand.Float32(), rand.Float32(), rand.Float32()}, V2{vA.X, vA.Y}, V2{vB.X, vB.Y}, V2{vC.X, vC.Y})
-		
+		r.GLTriangleFillBC(Color{1,1,1},	V2{vA.X, vA.Y}, V2{vB.X, vB.Y}, V2{vC.X, vC.Y})
 	}
 
 }
 
+func baryCoords(A,B,C, P V2) (float32, float32, float32) {
+	// PCB || PB X PC||
+	areaPBC := (B.Y - C.Y) * (P.X - C.X) + (C.X - B.X) * (P.Y - C.Y)
+	// PAC || PA X PC||
+	areaPAC := (C.Y - A.Y) * (P.X - C.X) + (A.X - C.X) * (P.Y - C.Y)
+	// ABC || AB X AC ||
+	areaABC := (B.Y - C.Y) * (A.X - C.X) + (C.X - B.X) * (A.Y - C.Y)
+	// PBC / ABC
+	u := areaPBC/areaABC
+	// PAC / ABC
+	v := areaPAC/areaABC
+	w := 1 - u - v
+	return float32(u),float32(v),float32(w)
+}
+
+// Fills a triangle with Bariy centric coordinates
+func (r *Renderer) GLTriangleFillBC(color Color, A,B,C V2) {
+	// Draw the triangle lines
+	// r.GlPolygon(color, A,B,C)
+	// Create a bounding box
+	minX := math.Min(float64(A.X), float64(B.X))
+	minX = math.Min(minX, float64(C.X))
+	minY := math.Min(float64(A.Y), float64(B.Y))
+	minY = math.Min(minY, float64(C.Y))
+	maxX := math.Max(float64(A.X), float64(B.X))
+	maxX = math.Max(maxX, float64(C.X))
+	maxY := math.Max(float64(A.Y), float64(B.Y))
+	maxY = math.Max(maxY, float64(C.Y))
+	
+	colorA := Color{1,0,0}
+	colorB := Color{0,1,0}
+	colorC := Color{0,0,1}
+	
+	for x := math.Round(minX - 1); x < math.Round(maxX + 2); x++ {
+		for y := math.Round(minY - 1); y < math.Round(maxY + 2); y++ {
+			u,v,w := baryCoords(A,B,C, V2{float32(x),float32(y)})
+			// Only in this case the point is inside the triangle
+			if 0<=u && u <= 1 && 0 <= v && v <= 1 && 0 <= w && w<=1 {
+				colorP := Color{colorA.R * u + colorB.R * v + colorC.R * w, 
+												colorA.G * u + colorB.G * v + colorC.G * w,
+												colorA.B * u + colorB.B * v + colorC.B * w}
+				r.GlPoint(V2{float32(x),float32(y)}, colorP)
+			}
+		}
+	}
+
+}
+
+// Fills a triangle with a specific color
 func (r *Renderer) GlTriangleFillStd(color Color, A,B,C V2)  {
 	// Step 1: A should be at the top
 	if A.Y < B.Y {
