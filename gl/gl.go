@@ -21,6 +21,7 @@ type Renderer struct {
 	clearColor Color
 	color Color
 	pixels [][]Color
+	zBuffer [][]float32
 	vpX,vpY,vpWidth,vpHeight uint32
 }
 
@@ -77,6 +78,16 @@ func (r * Renderer) GlClear() {
 		}
 		r.pixels = append(r.pixels, row)
 	}
+	// Create an empty zBuffer
+	for i := 0; i < int(r.width); i++ {
+		row := []float32{}
+		for j := 0; j < int(r.height); j++ {
+			row= append(row, float32(math.Inf(1)))
+		}
+		r.zBuffer = append(r.zBuffer, row)
+		
+	}
+
 }
 
 // Draws a point on the renderer
@@ -333,7 +344,7 @@ func (r * Renderer) GlLoadModel(filename string,translate, rotate, scale V3) {
 		vA := glTransform(V3{v0[0], v0[1], v0[2]}, modelMatrix)
 		vB := glTransform(V3{v1[0], v1[1], v1[2]}, modelMatrix)
 		vC := glTransform(V3{v2[0], v2[1], v2[2]}, modelMatrix)
-		r.GLTriangleFillBC(Color{1,1,1},	V2{vA.X, vA.Y}, V2{vB.X, vB.Y}, V2{vC.X, vC.Y})
+		r.GLTriangleFillBC(Color{rand.Float32(),rand.Float32(),rand.Float32()},	V3{vA.X, vA.Y, vA.Z}, V3{vB.X, vB.Y, vB.Z}, V3{vC.X, vC.Y, vC.Z})
 	}
 
 }
@@ -354,7 +365,7 @@ func baryCoords(A,B,C, P V2) (float32, float32, float32) {
 }
 
 // Fills a triangle with Bariy centric coordinates
-func (r *Renderer) GLTriangleFillBC(color Color, A,B,C V2) {
+func (r *Renderer) GLTriangleFillBC(color Color, A,B,C V3) {
 	// Draw the triangle lines
 	// r.GlPolygon(color, A,B,C)
 	// Create a bounding box
@@ -367,19 +378,25 @@ func (r *Renderer) GLTriangleFillBC(color Color, A,B,C V2) {
 	maxY := math.Max(float64(A.Y), float64(B.Y))
 	maxY = math.Max(maxY, float64(C.Y))
 	
-	colorA := Color{1,0,0}
-	colorB := Color{0,1,0}
-	colorC := Color{0,0,1}
+	// colorA := Color{1,0,0}
+	// colorB := Color{0,1,0}
+	// colorC := Color{0,0,1}
 	
 	for x := math.Round(minX - 1); x < math.Round(maxX + 2); x++ {
 		for y := math.Round(minY - 1); y < math.Round(maxY + 2); y++ {
-			u,v,w := baryCoords(A,B,C, V2{float32(x),float32(y)})
+			u,v,w := baryCoords(V2{A.X, A.Y},V2{B.X,B.Y},V2{C.X, C.Y}, V2{float32(x),float32(y)})
 			// Only in this case the point is inside the triangle
 			if 0<=u && u <= 1 && 0 <= v && v <= 1 && 0 <= w && w<=1 {
-				colorP := Color{colorA.R * u + colorB.R * v + colorC.R * w, 
-												colorA.G * u + colorB.G * v + colorC.G * w,
-												colorA.B * u + colorB.B * v + colorC.B * w}
-				r.GlPoint(V2{float32(x),float32(y)}, colorP)
+				// colorP := Color{colorA.R * u + colorB.R * v + colorC.R * w, 
+				// 								colorA.G * u + colorB.G * v + colorC.G * w,
+				// 								colorA.B * u + colorB.B * v + colorC.B * w}
+				z :=( A.Z * u) + (B.Z * v) + (C.Z * w)
+				if z < float32(r.zBuffer[int(y)][int(x)]) {
+					r.zBuffer[int(y)][int(x)] = (z)
+					r.GlPoint(V2{float32(x),float32(y)}, Color{1 - z/800, 1 - z/800,1 - z/800})
+					
+				}
+
 			}
 		}
 	}
@@ -455,19 +472,50 @@ func glTransform(vertex V3, matrix numg.M) V3 {
 	return vf
 }
 
+func glCreateRotationMatrix(pitch,yaw,roll float32) numg.M {
+	// Create identity matrix
+	pitch *= math.Pi/180.0
+	yaw *= math.Pi/180.0
+	roll *= math.Pi/180.0
+	pitchMat, _ := numg.Identity(4)
+	pitchMat[1][1] =float32(math.Cos(float64(pitch)))
+	pitchMat[1][2] =float32(-math.Sin(float64(pitch)))
+	pitchMat[2][1] =float32(math.Sin(float64(pitch)))
+	pitchMat[2][2] =float32(math.Cos(float64(pitch)))
+	yawMat, _ := numg.Identity(4)
+	yawMat[0][0] = float32(math.Cos(float64(yaw)))
+	yawMat[0][2] = float32(math.Sin(float64(yaw)))
+	yawMat[2][0] = float32(-math.Sin(float64(yaw)))
+	yawMat[2][2] = float32(math.Cos(float64(yaw)))
+	rollMat, _ := numg.Identity(4)
+	rollMat[0][0] = float32(math.Cos(float64(roll)))
+	rollMat[0][1] = float32(-math.Sin(float64(roll)))
+	rollMat[1][0] = float32(math.Sin(float64(roll)))
+	rollMat[1][1] = float32(math.Cos(float64(roll)))
+	
+	res0, _ :=numg.MultiplyMatrices(pitchMat, yawMat)
+	res, _ := numg.MultiplyMatrices(res0, rollMat)
+	return res
+}
+
 // Creates a transformation matrix using the translation, rotation and scaling parameters.
 func glCreateObjectMatrix(translate, rotate, scale V3) numg.M {
 	translateMatrix, _ := numg.Identity(4)
 	translateMatrix[0][3] = translate.X
 	translateMatrix[1][3] = translate.Y
 	translateMatrix[2][3] = translate.Z
-
+	rotationMatrix := glCreateRotationMatrix(rotate.X, rotate.Y, rotate.Z)
 	scaleMatrix, _ := numg.Identity(4)
 	scaleMatrix[0][0] = scale.X
 	scaleMatrix[1][1] = scale.Y
 	scaleMatrix[2][2] = scale.Z
 
-	result, err := numg.MultiplyMatrices(translateMatrix, scaleMatrix)
+	result0, err0 := numg.MultiplyMatrices(translateMatrix, rotationMatrix)
+	if err0 != nil {
+		log.Fatal(err0.Error())
+	}
+
+	result, err := numg.MultiplyMatrices(result0, scaleMatrix)
 	// Validate the result
 	if err != nil {
 		log.Fatal(err.Error())
