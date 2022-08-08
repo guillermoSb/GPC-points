@@ -19,7 +19,7 @@ func flatShader(r *Renderer, args KWA) (float32, float32, float32)  {
 	if intensity > 0 {
 			return color.R * intensity,color.G * intensity, color.B * intensity		
 	} else {
-			return color.R * 0.1,color.G * 0.1,color.B * 0.1
+			return 0,0,0
 	}
 	
 }

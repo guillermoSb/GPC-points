@@ -364,7 +364,7 @@ func (r * Renderer) GlLoadModel(filename string,translate, rotate, scale V3) {
 			v3 := model.Vertices[face[3][0] - 1]
 			vt3 := model.Texrecords[face[3][1] - 1]
 			vD := glTransform(V3{v3[0], v3[1], v3[2]}, modelMatrix)
-			r.GLTriangleFillBC(triangleColor,	V3{vA.X, vA.Y, vA.Z}, V3{vD.X, vD.Y, vD.Z}, V3{vC.X, vC.Y, vC.Z}, [][]float32{vt0, vt2, vt3})
+			r.GLTriangleFillBC(triangleColor,	V3{vA.X, vA.Y, vA.Z}, V3{vC.X, vC.Y, vC.Z}, V3{vD.X, vD.Y, vD.Z}, [][]float32{vt0, vt2, vt3})
 		}
 	}
 
