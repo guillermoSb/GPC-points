@@ -17,9 +17,9 @@ func flatShader(r *Renderer, args KWA) (float32, float32, float32)  {
 	intensity := numg.V3DotProduct(A,B)
 
 	if intensity > 0 {
-			return color.R * intensity,color.B * intensity, color.G * intensity		
+			return color.R * intensity,color.G * intensity, color.B * intensity		
 	} else {
-			return 0,0,0
+			return color.R * 0.1,color.G * 0.1,color.B * 0.1
 	}
 	
 }

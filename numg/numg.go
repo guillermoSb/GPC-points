@@ -52,6 +52,7 @@ func V3MultiplyScalar(A V3, c float32) V3 {
 	return V3{A[0]*c, A[1]*c, A[2]*c}
 }
 
+
 // Create an identity matrix of n size
 func Identity(n int) (M, error) {
 	if n <= 0 {
