@@ -24,6 +24,8 @@ type Renderer struct {
 	zBuffer [][]float32
 	vpX,vpY,vpWidth,vpHeight uint32
 	activeShader func(r *Renderer, args KWA) (float32, float32, float32)
+	activeTexture Texture
+	UseTexture bool
 	UseShader bool
 	dirLight V3
 }
@@ -43,9 +45,8 @@ func (r * Renderer) glCreateWindow(width, height uint32) {
 	r.width = width
 	r.height = height
 	r.pixels = [][]Color{}
-	r.activeShader = flatShader
-	r.UseShader = false
-	r.dirLight = V3{1,0,0}
+	r.activeShader = textureShader
+	r.dirLight = V3{0,1,0}
 	r.GlViewPort(0,0,r.width,r.height)
 }
 
@@ -334,6 +335,9 @@ func (r * Renderer) GlPolygon(color Color,points ...V2) []V2 {
 func (r * Renderer) GlLoadModel(filename string,translate, rotate, scale V3) {
 	model := Obj{}
 	model = model.InitObj(filename)
+	r.activeTexture = InitTexture("model.bmp")
+	r.UseTexture = true
+	r.UseShader = true
 	modelMatrix := glCreateObjectMatrix(translate, rotate, scale)
 	for _, face := range model.Faces {
 		vertCount := len(face)
@@ -346,16 +350,21 @@ func (r * Renderer) GlLoadModel(filename string,translate, rotate, scale V3) {
 		v0 := model.Vertices[face[0][0] - 1]
 		v1 := model.Vertices[face[1][0] - 1]
 		v2 := model.Vertices[face[2][0] - 1]
+
+		vt0 := model.Texrecords[face[0][1] - 1]
+		vt1 := model.Texrecords[face[1][1] - 1]
+		vt2 := model.Texrecords[face[2][1] - 1]
 		
 		vA := glTransform(V3{v0[0], v0[1], v0[2]}, modelMatrix)
 		vB := glTransform(V3{v1[0], v1[1], v1[2]}, modelMatrix)
 		vC := glTransform(V3{v2[0], v2[1], v2[2]}, modelMatrix)
 		triangleColor := Color{1,1,1}
-		r.GLTriangleFillBC(triangleColor,	V3{vA.X, vA.Y, vA.Z}, V3{vB.X, vB.Y, vB.Z}, V3{vC.X, vC.Y, vC.Z})
+		r.GLTriangleFillBC(triangleColor,	V3{vA.X, vA.Y, vA.Z}, V3{vB.X, vB.Y, vB.Z}, V3{vC.X, vC.Y, vC.Z}, [][]float32{vt0, vt1, vt2})
 		if vertCount == 4 {
 			v3 := model.Vertices[face[3][0] - 1]
+			vt3 := model.Texrecords[face[3][1] - 1]
 			vD := glTransform(V3{v3[0], v3[1], v3[2]}, modelMatrix)
-			r.GLTriangleFillBC(triangleColor,	V3{vA.X, vA.Y, vA.Z}, V3{vD.X, vD.Y, vD.Z}, V3{vC.X, vC.Y, vC.Z})
+			r.GLTriangleFillBC(triangleColor,	V3{vA.X, vA.Y, vA.Z}, V3{vD.X, vD.Y, vD.Z}, V3{vC.X, vC.Y, vC.Z}, [][]float32{vt0, vt2, vt3})
 		}
 	}
 
@@ -377,7 +386,7 @@ func baryCoords(A,B,C, P V2) (float32, float32, float32) {
 }
 
 // Fills a triangle with Bariy centric coordinates
-func (r *Renderer) GLTriangleFillBC(color Color, A,B,C V3) {
+func (r *Renderer) GLTriangleFillBC(color Color, A,B,C V3, textCoords [][]float32) {
 	// Draw the triangle lines
 	// r.GlPolygon(color, A,B,C)
 	// Create a bounding box
@@ -400,20 +409,28 @@ func (r *Renderer) GLTriangleFillBC(color Color, A,B,C V3) {
 	for x := math.Round(minX - 1); x < math.Round(maxX + 2); x++ {
 		for y := math.Round(minY - 1); y < math.Round(maxY + 2); y++ {
 			u,v,w := baryCoords(V2{A.X, A.Y},V2{B.X,B.Y},V2{C.X, C.Y}, V2{float32(x),float32(y)})
-			// Only in this case the point is inside the triangle
+	
 			if 0<=u && u <= 1 && 0 <= v && v <= 1 && 0 <= w && w<=1 {
-				// colorP := Color{colorA.R * u + colorB.R * v + colorC.R * w, 
-				// 								colorA.G * u + colorB.G * v + colorC.G * w,
-				// 								colorA.B * u + colorB.B * v + colorC.B * w}
+	
 				z :=( A.Z * u) + (B.Z * v) + (C.Z * w)
 				if z < float32(r.zBuffer[int(y)][int(x)]) {
 					r.zBuffer[int(y)][int(x)] = (z)
 					if (r.UseShader) {
-						red,green,blue := flatShader(r, KWA{"baryCoords": V3{u,v,w}, "vColor": color, "triangleNormal": V3{triangleNormal[0],triangleNormal[1],triangleNormal[2]}})
+					
+						r.activeShader = flatShader
+						red2,green2,blue2 := r.activeShader(r, KWA{"baryCoords": V3{u,v,w}, 
+						"vColor": color, 
+						"triangleNormal": V3{triangleNormal[0],triangleNormal[1],triangleNormal[2]}, 
+						"textCoords": textCoords})
+							r.activeShader = textureShader
+						red,green,blue := r.activeShader(r, KWA{"baryCoords": V3{u,v,w}, 
+						"vColor": Color{red2, green2, blue2}, 
+						"triangleNormal": V3{triangleNormal[0],triangleNormal[1],triangleNormal[2]}, 
+						"textCoords": textCoords})
 						r.GlPoint(V2{float32(x),float32(y)}, Color{red,green,blue})
 					} else {
 						r.GlPoint(V2{float32(x),float32(y)}, color)
-
+						
 					}
 					
 				}
