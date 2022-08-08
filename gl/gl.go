@@ -23,6 +23,9 @@ type Renderer struct {
 	pixels [][]Color
 	zBuffer [][]float32
 	vpX,vpY,vpWidth,vpHeight uint32
+	activeShader func(r *Renderer, args KWA) (float32, float32, float32)
+	UseShader bool
+	dirLight V3
 }
 
 // Initialize the renderer
@@ -40,6 +43,9 @@ func (r * Renderer) glCreateWindow(width, height uint32) {
 	r.width = width
 	r.height = height
 	r.pixels = [][]Color{}
+	r.activeShader = flatShader
+	r.UseShader = false
+	r.dirLight = V3{1,0,0}
 	r.GlViewPort(0,0,r.width,r.height)
 }
 
@@ -330,7 +336,7 @@ func (r * Renderer) GlLoadModel(filename string,translate, rotate, scale V3) {
 	model = model.InitObj(filename)
 	modelMatrix := glCreateObjectMatrix(translate, rotate, scale)
 	for _, face := range model.Faces {
-		// vertCount := len(face)
+		vertCount := len(face)
 		// vertices := []V2{}
 		// for i := 0; i < vertCount; i++ {
 		// 	v0 := model.Vertices[face[i][0] - 1]
@@ -344,7 +350,13 @@ func (r * Renderer) GlLoadModel(filename string,translate, rotate, scale V3) {
 		vA := glTransform(V3{v0[0], v0[1], v0[2]}, modelMatrix)
 		vB := glTransform(V3{v1[0], v1[1], v1[2]}, modelMatrix)
 		vC := glTransform(V3{v2[0], v2[1], v2[2]}, modelMatrix)
-		r.GLTriangleFillBC(Color{rand.Float32(),rand.Float32(),rand.Float32()},	V3{vA.X, vA.Y, vA.Z}, V3{vB.X, vB.Y, vB.Z}, V3{vC.X, vC.Y, vC.Z})
+		triangleColor := Color{1,1,1}
+		r.GLTriangleFillBC(triangleColor,	V3{vA.X, vA.Y, vA.Z}, V3{vB.X, vB.Y, vB.Z}, V3{vC.X, vC.Y, vC.Z})
+		if vertCount == 4 {
+			v3 := model.Vertices[face[3][0] - 1]
+			vD := glTransform(V3{v3[0], v3[1], v3[2]}, modelMatrix)
+			r.GLTriangleFillBC(triangleColor,	V3{vA.X, vA.Y, vA.Z}, V3{vD.X, vD.Y, vD.Z}, V3{vC.X, vC.Y, vC.Z})
+		}
 	}
 
 }
@@ -377,6 +389,9 @@ func (r *Renderer) GLTriangleFillBC(color Color, A,B,C V3) {
 	maxX = math.Max(maxX, float64(C.X))
 	maxY := math.Max(float64(A.Y), float64(B.Y))
 	maxY = math.Max(maxY, float64(C.Y))
+
+	triangleNormal := numg.NormalizeV3(numg.Cross(numg.Subtract(numg.V3{B.X,B.Y, B.Z},numg.V3{A.X,A.Y, A.Z}), 
+							numg.Subtract(numg.V3{C.X,C.Y, C.Z},numg.V3{A.X,A.Y, A.Z})))
 	
 	// colorA := Color{1,0,0}
 	// colorB := Color{0,1,0}
@@ -393,14 +408,19 @@ func (r *Renderer) GLTriangleFillBC(color Color, A,B,C V3) {
 				z :=( A.Z * u) + (B.Z * v) + (C.Z * w)
 				if z < float32(r.zBuffer[int(y)][int(x)]) {
 					r.zBuffer[int(y)][int(x)] = (z)
-					r.GlPoint(V2{float32(x),float32(y)}, Color{1 - z/800, 1 - z/800,1 - z/800})
+					if (r.UseShader) {
+						red,green,blue := flatShader(r, KWA{"baryCoords": V3{u,v,w}, "vColor": color, "triangleNormal": V3{triangleNormal[0],triangleNormal[1],triangleNormal[2]}})
+						r.GlPoint(V2{float32(x),float32(y)}, Color{red,green,blue})
+					} else {
+						r.GlPoint(V2{float32(x),float32(y)}, color)
+
+					}
 					
 				}
 
 			}
 		}
 	}
-
 }
 
 // Fills a triangle with a specific color

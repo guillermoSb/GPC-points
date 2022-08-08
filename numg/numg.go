@@ -44,6 +44,14 @@ func MultiplyMatrices(a,b M) (M, error)  {
 	return c, nil
 }
 
+func V3DotProduct(A V3, B V3) float32 {
+	return A[0] * B[0] + A[1] * B[1] + A[2] * B[2]
+}
+
+func V3MultiplyScalar(A V3, c float32) V3 {
+	return V3{A[0]*c, A[1]*c, A[2]*c}
+}
+
 // Create an identity matrix of n size
 func Identity(n int) (M, error) {
 	if n <= 0 {
@@ -83,15 +91,25 @@ func MultiplyMatrixByScalar(a M, c float32) (M, error) {
 }
 
 
-func Subtract(A,B V2) V2{
-	newV2 := V2{0,0}
-	newV2[0] = B[0] - A[0]
-	newV2[1] = B[1] - A[1]
-	return newV2
+func Subtract(A,B V3) V3{
+	newV := V3{0,0,0}
+	newV[0] = A[0] - B[0]
+	newV[1] = A[1] - B[1]
+	newV[2] = A[2] - B[2]
+	return newV
 }
 
-func Cross(A,B V2) V3 {
-	return V3{0,0,(A[0]*B[1])-(A[1]*B[0]) }
+func NormalizeV3(A V3) V3 {
+	m := float32(math.Sqrt(math.Pow(float64(A[0]), 2) + math.Pow(float64(A[1]), 2) + math.Pow(float64(A[2]), 2)))
+	newA := V3{A[0]/m,A[1]/m,A[2]/m}
+	return newA
+}
+
+func Cross(A,B V3) V3 {
+	det1 := (A[1] * B[2]) - (B[1]*A[2])
+	det2 := (A[0] * B[2]) - (B[0]*A[2])
+	det3 := (A[0] * B[1]) - (B[0]*A[1])
+	return V3{det1, -det2, det3}
 }
 
 func Norm(A V3) float64 {
