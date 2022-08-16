@@ -16,15 +16,18 @@ func main() {
 	renderer.GlColor(1,1,1)
 	renderer.GlClear()
 	renderer.UseShader = true
-	// Object
-	renderer.GlLoadModel("mario.obj", gl.V3{-3,0,-10}, gl.V3{0,0,0}, gl.V3{0.04,0.04,0.04})
-	renderer.GlLoadModel("mario.obj", gl.V3{3,0,-10}, gl.V3{0,0,0}, gl.V3{0.04,0.04,0.04})
-
-	// renderer.GlLoadModel("sphere.obj", gl.V3{float32(width)/2,0,1}, gl.V3{50,50,50}, gl.V3{500,500,0})
-	// renderer.GlLoadModel("sphere.obj", gl.V3{float32(width),float32(height),1}, gl.V3{50,50,50}, gl.V3{250,250,200})
-	// renderer.GlLoadModel("sphere.obj", gl.V3{float32(0),float32(0),1}, gl.V3{50,50,50}, gl.V3{250,250,200})
-	// Triangle
 	
+	// PHOTO SHOOT
+
+	// MEDIUM SHOT - TWO MARIOS
+	// renderer.GlLoadModel("mario.obj", gl.V3{-3,0,-10}, gl.V3{0,0,0}, gl.V3{0.04,0.04,0.04})
+	// renderer.GlLoadModel("mario.obj", gl.V3{1,-1,-3}, gl.V3{0,0,0}, gl.V3{0.04,0.04,0.04})
+	// LOW ANGLE
+	// renderer.GlLoadModel("mario.obj", gl.V3{0,0,-5}, gl.V3{-24,0,0}, gl.V3{0.04,0.04,0.04})
+	// HIGH ANGLE
+	// renderer.GlLoadModel("mario.obj", gl.V3{0,-1,-10}, gl.V3{25,0,0}, gl.V3{0.04,0.04,0.04})
+	// DUTCH ANGLE
+	renderer.GlLoadModel("mario.obj", gl.V3{0,0,-5}, gl.V3{0,0,45}, gl.V3{0.04,0.04,0.04})
 	
 	renderer.GlFinish("out.bmp")
 	fmt.Println("----------      FINISHED      ----------")	
