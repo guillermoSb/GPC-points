@@ -47,7 +47,7 @@ func (r * Renderer) glCreateWindow(width, height uint32) {
 	r.height = height
 	r.pixels = [][]Color{}
 	r.activeShader = textureShader
-	r.dirLight = V3{-1,0,0}
+	r.dirLight = V3{1,0,0}
 	r.GLViewMatrix(V3{0,0,0}, V3{0,0,0})
 	r.GlViewPort(0,0,r.width,r.height)
 }
@@ -364,20 +364,24 @@ func (r * Renderer) GlLoadModel(filename string,translate, rotate, scale V3) {
 		vt1 := model.Texrecords[face[1][1] - 1]
 		vt2 := model.Texrecords[face[2][1] - 1]
 		
-		vA := glTransform(V3{v0[0], v0[1], v0[2]}, modelMatrix)
-		vB := glTransform(V3{v1[0], v1[1], v1[2]}, modelMatrix)
-		vC := glTransform(V3{v2[0], v2[1], v2[2]}, modelMatrix)
-		vA = r.glCamTransform(vA)
-		vB = r.glCamTransform(vB)
-		vC = r.glCamTransform(vC)
+		A := glTransform(V3{v0[0], v0[1], v0[2]}, modelMatrix)
+		B := glTransform(V3{v1[0], v1[1], v1[2]}, modelMatrix)
+		C := glTransform(V3{v2[0], v2[1], v2[2]}, modelMatrix)
+
+
+
+		vA := r.glCamTransform(A)
+		vB := r.glCamTransform(B)
+		vC := r.glCamTransform(C)
+		
 		triangleColor := Color{1,1,1}
-		r.GLTriangleFillBC(triangleColor,	V3{vA.X, vA.Y, vA.Z}, V3{vB.X, vB.Y, vB.Z}, V3{vC.X, vC.Y, vC.Z}, [][]float32{vt0, vt1, vt2})
+		r.GLTriangleFillBC(triangleColor,	V3{vA.X, vA.Y, vA.Z}, V3{vB.X, vB.Y, vB.Z}, V3{vC.X, vC.Y, vC.Z}, []V3{A,B,C} ,[][]float32{vt0, vt1, vt2})
 		if vertCount == 4 {
 			v3 := model.Vertices[face[3][0] - 1]
 			vt3 := model.Texrecords[face[3][1] - 1]
-			vD := glTransform(V3{v3[0], v3[1], v3[2]}, modelMatrix)
-			vD = r.glCamTransform(vD)
-			r.GLTriangleFillBC(triangleColor,	V3{vA.X, vA.Y, vA.Z}, V3{vC.X, vC.Y, vC.Z}, V3{vD.X, vD.Y, vD.Z}, [][]float32{vt0, vt2, vt3})
+			D := glTransform(V3{v3[0], v3[1], v3[2]}, modelMatrix)
+			vD := r.glCamTransform(D)
+			r.GLTriangleFillBC(triangleColor,	V3{vA.X, vA.Y, vA.Z}, V3{vC.X, vC.Y, vC.Z}, V3{vD.X, vD.Y, vD.Z},[]V3{A,C,D}, [][]float32{vt0, vt2, vt3})
 		}
 	}
 
@@ -421,7 +425,7 @@ func (r * Renderer) GLProjectionMatrix(n , f, fov float64) {
 }
 
 // Fills a triangle with Bariy centric coordinates
-func (r *Renderer) GLTriangleFillBC(color Color, A,B,C V3, textCoords [][]float32) {
+func (r *Renderer) GLTriangleFillBC(color Color, A,B,C V3, verts []V3 ,textCoords [][]float32) {
 	// Draw the triangle lines
 	// r.GlPolygon(color, A,B,C)
 	// Create a bounding box
@@ -434,8 +438,8 @@ func (r *Renderer) GLTriangleFillBC(color Color, A,B,C V3, textCoords [][]float3
 	maxY := math.Max(float64(A.Y), float64(B.Y))
 	maxY = math.Max(maxY, float64(C.Y))
 
-	triangleNormal := numg.NormalizeV3(numg.Cross(numg.Subtract(numg.V3{B.X,B.Y, B.Z},numg.V3{A.X,A.Y, A.Z}), 
-							numg.Subtract(numg.V3{C.X,C.Y, C.Z},numg.V3{A.X,A.Y, A.Z})))
+	triangleNormal := numg.NormalizeV3(numg.Cross(numg.Subtract(numg.V3{verts[1].X,verts[1].Y, verts[1].Z},numg.V3{verts[0].X,verts[0].Y, verts[0].Z}), 
+							numg.Subtract(numg.V3{verts[2].X,verts[2].Y, verts[2].Z},numg.V3{verts[0].X,verts[0].Y, verts[0].Z})))
 	
 	// colorA := Color{1,0,0}
 	// colorB := Color{0,1,0}
@@ -459,7 +463,7 @@ func (r *Renderer) GLTriangleFillBC(color Color, A,B,C V3, textCoords [][]float3
 						"vColor": color, 
 						"triangleNormal": V3{triangleNormal[0],triangleNormal[1],triangleNormal[2]}, 
 						"textCoords": textCoords})
-						r.activeShader = unlit
+						r.activeShader = flatShader
 						red2,green2,blue2 := r.activeShader(r, KWA{"baryCoords": V3{u,v,w}, 
 						"vColor": Color{red,green,blue}, 
 						"triangleNormal": V3{triangleNormal[0],triangleNormal[1],triangleNormal[2]}, 
