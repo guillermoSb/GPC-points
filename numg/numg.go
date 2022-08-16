@@ -92,6 +92,61 @@ func MultiplyMatrixByScalar(a M, c float32) (M, error) {
 }
 
 
+func InverseOfMatrix(a M) (M, error) {
+	// Using Gauss-Jordan Elimination
+
+	// A
+	augmentedMatrix := M{}
+	n := len(a)
+	for i := 0; i < n; i++ {
+		row := []float32{}
+		for j := 0; j < 2*n; j++ {
+			if j >= n {
+				if j == ((n) + i) {
+					row = append(row, 1)	
+				} else {
+					row = append(row,0)
+				}
+			} else {
+				row = append(row, a[i][j])
+			}
+		}
+		augmentedMatrix = append(augmentedMatrix, row)
+	}
+	for i := 0; i < n; i++ {
+		for j := 0; j < n; j++ {
+			if i != j {
+				ratio := augmentedMatrix[j][i] / augmentedMatrix[i][i]
+				for k := 0; k < 2*n; k++ {
+					augmentedMatrix[j][k] = augmentedMatrix[j][k] - ratio * augmentedMatrix[i][k]
+				}
+			}
+		}
+	}
+	for i := 0; i < n; i++ {
+		divisor := augmentedMatrix[i][i]
+		for j := 0; j < n * 2; j++ {
+			augmentedMatrix[i][j] = augmentedMatrix[i][j] / divisor
+		}
+	}	
+	for i := 0; i < n; i++ {
+		for j := 0; j < n; j++ {
+			augmentedMatrix[i][j] = float32(math.Abs(float64(augmentedMatrix[i][j])))
+		}
+	}
+	result := M{}
+	for i := 0; i < n; i++ {
+		row := []float32{}
+		for j := n; j < 2*n; j++ {
+			row = append(row, float32(augmentedMatrix[i][j]))
+		}
+		result = append(result, row)
+	}
+
+	
+	return result,nil
+}
+
 func Subtract(A,B V3) V3{
 	newV := V3{0,0,0}
 	newV[0] = A[0] - B[0]

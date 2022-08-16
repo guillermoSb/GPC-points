@@ -44,8 +44,6 @@ func Test_glGetMaxMinDimensions_returns_accurate_information(t *testing.T) {
 
 }
 
-
-
 func createTestingRenderer(vWidth, vHeight int) Renderer {
 	width := vWidth
 	height := vHeight

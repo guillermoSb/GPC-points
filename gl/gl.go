@@ -28,6 +28,7 @@ type Renderer struct {
 	UseTexture bool
 	UseShader bool
 	dirLight V3
+	viewMatrix, projectionMatrix, viewPortMatrix numg.M
 }
 
 // Initialize the renderer
@@ -47,6 +48,7 @@ func (r * Renderer) glCreateWindow(width, height uint32) {
 	r.pixels = [][]Color{}
 	r.activeShader = textureShader
 	r.dirLight = V3{-1,0,0}
+	r.GLViewMatrix(V3{0,0,0}, V3{0,0,0})
 	r.GlViewPort(0,0,r.width,r.height)
 }
 
@@ -134,6 +136,13 @@ func (r *Renderer) GlViewPort(posX, posY, width, height uint32) {
 	r.vpY = posY
 	r.vpWidth = width
 	r.vpHeight = height
+	r.viewPortMatrix = numg.M{
+		{float32(width)/2,0,0,float32(posX) + float32(width)/2},
+		{0,float32(height)/2,0,float32(posY) + float32(height)/2},
+		{0,0,0.5,0.5},
+		{0,0,0,1},
+	}
+	r.GLProjectionMatrix(0.1, 1000, 60)
 }
 
 // Clears the viewport with a given color
@@ -358,12 +367,16 @@ func (r * Renderer) GlLoadModel(filename string,translate, rotate, scale V3) {
 		vA := glTransform(V3{v0[0], v0[1], v0[2]}, modelMatrix)
 		vB := glTransform(V3{v1[0], v1[1], v1[2]}, modelMatrix)
 		vC := glTransform(V3{v2[0], v2[1], v2[2]}, modelMatrix)
+		vA = r.glCamTransform(vA)
+		vB = r.glCamTransform(vB)
+		vC = r.glCamTransform(vC)
 		triangleColor := Color{1,1,1}
 		r.GLTriangleFillBC(triangleColor,	V3{vA.X, vA.Y, vA.Z}, V3{vB.X, vB.Y, vB.Z}, V3{vC.X, vC.Y, vC.Z}, [][]float32{vt0, vt1, vt2})
 		if vertCount == 4 {
 			v3 := model.Vertices[face[3][0] - 1]
 			vt3 := model.Texrecords[face[3][1] - 1]
 			vD := glTransform(V3{v3[0], v3[1], v3[2]}, modelMatrix)
+			vD = r.glCamTransform(vD)
 			r.GLTriangleFillBC(triangleColor,	V3{vA.X, vA.Y, vA.Z}, V3{vC.X, vC.Y, vC.Z}, V3{vD.X, vD.Y, vD.Z}, [][]float32{vt0, vt2, vt3})
 		}
 	}
@@ -383,6 +396,28 @@ func baryCoords(A,B,C, P V2) (float32, float32, float32) {
 	v := areaPAC/areaABC
 	w := 1 - u - v
 	return float32(u),float32(v),float32(w)
+}
+
+func (r * Renderer) GLViewMatrix(translate, rotate V3) {
+	camMatrix := glCreateObjectMatrix(translate, rotate, V3{1,1,1})
+	viewMatrix, err := numg.InverseOfMatrix(camMatrix)
+	if err != nil {
+		log.Fatal(err)
+	}
+	r.viewMatrix = viewMatrix
+
+}
+
+func (r * Renderer) GLProjectionMatrix(n , f, fov float64) {
+	aspectRatio := float32(float64(r.vpWidth) / float64(r.vpHeight))
+	top := float32(math.Tan(((fov) * (math.Pi/180)) / 2) * n)
+	right := float32(top * aspectRatio)
+	r.projectionMatrix = numg.M{
+		{float32(n)/right,0,0,0},
+		{0,float32(n)/top,0,0},
+		{0,0,-(float32(f) + float32(n)/(float32(f)-float32(n))),-2*float32(f)*float32(n)/(float32(f) - float32(n))},
+		{0,0,-1,0},
+	}
 }
 
 // Fills a triangle with Bariy centric coordinates
@@ -408,24 +443,28 @@ func (r *Renderer) GLTriangleFillBC(color Color, A,B,C V3, textCoords [][]float3
 	
 	for x := math.Round(minX - 1); x < math.Round(maxX + 2); x++ {
 		for y := math.Round(minY - 1); y < math.Round(maxY + 2); y++ {
+			if x < 0 || x >= float64(r.width) || y < 0 || y >= float64(r.height){
+				continue
+			}
 			u,v,w := baryCoords(V2{A.X, A.Y},V2{B.X,B.Y},V2{C.X, C.Y}, V2{float32(x),float32(y)})
 	
 			if 0<=u && u <= 1 && 0 <= v && v <= 1 && 0 <= w && w<=1 {
 	
 				z :=( A.Z * u) + (B.Z * v) + (C.Z * w)
-				if z < float32(r.zBuffer[int(y)][int(x)]) {
+				if z < float32(r.
+					zBuffer[int(y)][int(x)]) {
 					r.zBuffer[int(y)][int(x)] = (z)
 					if (r.UseShader) {
 						red,green,blue := r.activeShader(r, KWA{"baryCoords": V3{u,v,w}, 
 						"vColor": color, 
 						"triangleNormal": V3{triangleNormal[0],triangleNormal[1],triangleNormal[2]}, 
 						"textCoords": textCoords})
-						r.activeShader = flatShader
+						r.activeShader = unlit
 						red2,green2,blue2 := r.activeShader(r, KWA{"baryCoords": V3{u,v,w}, 
 						"vColor": Color{red,green,blue}, 
 						"triangleNormal": V3{triangleNormal[0],triangleNormal[1],triangleNormal[2]}, 
 						"textCoords": textCoords})
-							r.activeShader = textureShader
+						r.activeShader = textureShader
 						r.GlPoint(V2{float32(x),float32(y)}, Color{red2,green2,blue2})
 						
 					} else {
@@ -505,6 +544,16 @@ func (r * Renderer) flatTop(vA,vB,vC V2, color Color) {
 func glTransform(vertex V3, matrix numg.M) V3 {
 	v := V4{vertex.X, vertex.Y, vertex.Z,1}
 	vt, _ := numg.MultiplyMatrices(matrix, numg.M{{v.X}, {v.Y}, {v.Z},{v.W}})
+	vf := V3{vt[0][0]/vt[3][0], vt[1][0]/vt[3][0], vt[2][0]/vt[3][0]}
+	return vf
+}
+// Transforms a vertex using a transformation matrix
+func (r * Renderer) glCamTransform(vertex V3) V3 {
+	v := V4{vertex.X, vertex.Y, vertex.Z,1}
+	
+	a, _ := numg.MultiplyMatrices(r.viewPortMatrix, r.projectionMatrix)
+	b,_ := numg.MultiplyMatrices(a, r.viewMatrix)
+	vt, _ := numg.MultiplyMatrices(b, numg.M{{v.X}, {v.Y}, {v.Z},{v.W}})
 	vf := V3{vt[0][0]/vt[3][0], vt[1][0]/vt[3][0], vt[2][0]/vt[3][0]}
 	return vf
 }

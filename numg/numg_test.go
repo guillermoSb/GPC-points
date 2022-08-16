@@ -81,8 +81,8 @@ func Test_generates_identity_matrix(t *testing.T) {
 
 func Test_calculates_cross_product(t *testing.T) {
 	// Arrange
-	A := V2{13,8}
-	B := V2{-1,2}
+	A := V3{13,8,0}
+	B := V3{-1,2,0}
 	// Act
 	C := Cross(A,B)
 	// Assert
@@ -96,4 +96,20 @@ func Test_calcualtes_vector_norm(t *testing.T) {
 	r := Norm(A)
 	// Assert
 	assert.Equal(t, 3.0, r)
+}
+
+func Test_calculateInverseMatrix(t *testing.T) {
+	// Arrange
+	m := M{{1,1,1}, {2,1,1}, {1, 1, 2}}
+	// Act
+	r, _ := InverseOfMatrix(m)
+	// Assert
+	
+	expected := M{
+		{-1,1,0},
+		{3,-1,-1},
+		{-1,0,1},
+	}
+
+	assert.Equal(t, expected, r)
 }

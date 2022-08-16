@@ -5,6 +5,12 @@ import (
 )
 type KWA map[string]interface{}
 
+
+func unlit(r *Renderer, args KWA) (float32, float32, float32)  {
+	color := args["vColor"].(Color)	
+	return color.R ,color.G , color.B 			
+}
+
 func flatShader(r *Renderer, args KWA) (float32, float32, float32)  {
 	// u := args["baryCoords"].(V3).X
 	// v := args["baryCoords"].(V3).Y
