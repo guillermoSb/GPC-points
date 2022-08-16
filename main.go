@@ -18,7 +18,7 @@ func main() {
 	renderer.UseShader = true
 	
 	// PHOTO SHOOT
-
+	// Para utilizar el photo shoot descompentar las lineas de cada una
 	// MEDIUM SHOT - TWO MARIOS
 	// renderer.GlLoadModel("mario.obj", gl.V3{-3,0,-10}, gl.V3{0,0,0}, gl.V3{0.04,0.04,0.04})
 	// renderer.GlLoadModel("mario.obj", gl.V3{1,-1,-3}, gl.V3{0,0,0}, gl.V3{0.04,0.04,0.04})
@@ -27,7 +27,7 @@ func main() {
 	// HIGH ANGLE
 	// renderer.GlLoadModel("mario.obj", gl.V3{0,-1,-10}, gl.V3{25,0,0}, gl.V3{0.04,0.04,0.04})
 	// DUTCH ANGLE
-	renderer.GlLoadModel("mario.obj", gl.V3{0,0,-5}, gl.V3{0,0,45}, gl.V3{0.04,0.04,0.04})
+	// renderer.GlLoadModel("mario.obj", gl.V3{0,0,-5}, gl.V3{0,0,45}, gl.V3{0.04,0.04,0.04})
 	
 	renderer.GlFinish("out.bmp")
 	fmt.Println("----------      FINISHED      ----------")	
