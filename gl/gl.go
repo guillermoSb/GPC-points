@@ -23,10 +23,8 @@ type Renderer struct {
 	pixels [][]Color
 	zBuffer [][]float32
 	vpX,vpY,vpWidth,vpHeight uint32
-	activeShader func(r *Renderer, args KWA) (float32, float32, float32)
-	activeTexture Texture
-	UseTexture bool
-	UseShader bool
+	ActiveShader func(r *Renderer, args KWA) (float32, float32, float32)
+	ActiveTexture Texture
 	dirLight V3
 	viewMatrix, projectionMatrix, viewPortMatrix numg.M
 }
@@ -46,8 +44,7 @@ func (r * Renderer) glCreateWindow(width, height uint32) {
 	r.width = width
 	r.height = height
 	r.pixels = [][]Color{}
-	r.activeShader = textureShader
-	r.dirLight = V3{1,0,0}
+	r.dirLight = V3{0,0,-1}
 	r.GLViewMatrix(V3{0,0,0}, V3{0,0,0})
 	r.GlViewPort(0,0,r.width,r.height)
 }
@@ -344,9 +341,6 @@ func (r * Renderer) GlPolygon(color Color,points ...V2) []V2 {
 func (r * Renderer) GlLoadModel(filename string,translate, rotate, scale V3) {
 	model := Obj{}
 	model = model.InitObj(filename)
-	r.activeTexture = InitTexture("marioD.bmp")
-	r.UseTexture = true
-	r.UseShader = true
 	modelMatrix := glCreateObjectMatrix(translate, rotate, scale)
 	for _, face := range model.Faces {
 		vertCount := len(face)
@@ -458,22 +452,19 @@ func (r *Renderer) GLTriangleFillBC(color Color, A,B,C V3, verts []V3 ,textCoord
 				if z < float32(r.
 					zBuffer[int(y)][int(x)]) {
 					r.zBuffer[int(y)][int(x)] = (z)
-					if (r.UseShader) {
-						red,green,blue := r.activeShader(r, KWA{"baryCoords": V3{u,v,w}, 
-						"vColor": color, 
-						"triangleNormal": V3{triangleNormal[0],triangleNormal[1],triangleNormal[2]}, 
-						"textCoords": textCoords})
-						r.activeShader = flatShader
-						red2,green2,blue2 := r.activeShader(r, KWA{"baryCoords": V3{u,v,w}, 
-						"vColor": Color{red,green,blue}, 
-						"triangleNormal": V3{triangleNormal[0],triangleNormal[1],triangleNormal[2]}, 
-						"textCoords": textCoords})
-						r.activeShader = textureShader
-						r.GlPoint(V2{float32(x),float32(y)}, Color{red2,green2,blue2})
-						
+					if (r.ActiveShader != nil) {
+						red,green,blue := r.ActiveShader(r, 
+						KWA{
+							"baryCoords": V3{u,v,w}, 
+							"vColor": color,
+							"triangleNormal": V3{triangleNormal[0],triangleNormal[1],triangleNormal[2]}, 
+							"textCoords": textCoords,
+							"positionCoords": V2{float32(x),float32(y)}},
+						)
+						r.GlPoint(V2{float32(x),float32(y)}, 
+						Color{red,green,blue})
 					} else {
 						r.GlPoint(V2{float32(x),float32(y)}, color)
-						
 					}
 					
 				}

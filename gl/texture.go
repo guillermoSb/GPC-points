@@ -10,6 +10,7 @@ import (
 type Texture struct {
 	Width, Height int
 	Pixels [][]Color
+	Name string
 }
 
 func InitTexture(fileName string) Texture{
@@ -57,6 +58,7 @@ func InitTexture(fileName string) Texture{
   texture.Width = int(width)
 	texture.Height = int(height)
 	texture.Pixels = pixels
+	texture.Name = fileName
 	return texture
 }
 
