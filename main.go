@@ -28,11 +28,14 @@ func main() {
 	// DUTCH ANGLE
 	renderer.ActiveTexture = gl.InitTexture("marioD.bmp")	// Mario Texture
 	renderer.ActiveShader = gl.CShader
-	renderer.GlLoadModel("mario.obj", gl.V3{-2,0,-5}, gl.V3{0,0,0}, gl.V3{0.02,0.02,0.02})
+	renderer.GlLoadModel("mario.obj", gl.V3{-2,1.6,-5}, gl.V3{0,0,0}, gl.V3{0.02,0.02,0.02})
 	renderer.ActiveShader = gl.BoxBlurShader
-	renderer.GlLoadModel("mario.obj", gl.V3{0,0,-5}, gl.V3{0,0,0}, gl.V3{0.02,0.02,0.02})
+	renderer.GlLoadModel("mario.obj", gl.V3{0,1.6,-5}, gl.V3{0,0,0}, gl.V3{0.02,0.02,0.02})
 	renderer.ActiveShader = gl.BWShader
-	renderer.GlLoadModel("mario.obj", gl.V3{2,0,-5}, gl.V3{0,0,0}, gl.V3{0.02,0.02,0.02})
+	renderer.GlLoadModel("mario.obj", gl.V3{2,1.6,-5}, gl.V3{0,0,0}, gl.V3{0.02,0.02,0.02})
+	renderer.ActiveShader = gl.GShader
+	renderer.GlLoadModel("mario.obj", gl.V3{0,-1.6,-5}, gl.V3{0,0,0}, gl.V3{0.02,0.02,0.02})
+	
 	// renderer.PerlinNoise()
 	renderer.GlFinish("out.bmp")
 	fmt.Println("----------      FINISHED      ----------")	
