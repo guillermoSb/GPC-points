@@ -3,6 +3,7 @@ package numg
 import (
 	"errors"
 	"math"
+	"math/rand"
 )
 
 // Matrix Definition
@@ -172,10 +173,43 @@ func Norm(A V3) float64 {
 	return math.Sqrt(math.Pow(float64(A[0]),2.0) + math.Pow(float64(A[1]),2.0) + math.Pow(float64(A[2]),2.0))
 }
 
-// TODO: Transpose matrix
+func Fade(t float64) float64 {
+	return ((6*t - 15)*t + 10)*t*t*t
+}
+
+func Lerp(t,a1,a2 float64) float64 {
+	return a1 + t*(a2-a1);
+}
+
+func Shuffle(list []float64) []float64 {
+	shuffled := make([]float64, len(list))
+	copy(shuffled,list)
+	for i := len(shuffled) - 1; i > 0; i-- {
+		random := rand.Intn(i + 1)
+		temp := shuffled[i]
+		shuffled[i] = shuffled[random]
+		shuffled[random] = temp
+	}
+	return shuffled
+}
+
+func MakePermutation() []float64 {
+	p := []float64{}
+	for i := 0; i < 256; i++ {
+		p = append(p, float64(i))
+	}
+	p = Shuffle(p)
+	for i := 0; i < 256; i++ {
+		p = append(p, p[i])
+	}
+	return p
+
+}
 
 
+func GetConstantVector(v float64) {
 
+}
 
 // Error Strings
 const InvalidMatrixSizeErrorString = "Invalid size for matrix multiplicaiton."

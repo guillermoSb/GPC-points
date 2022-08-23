@@ -410,12 +410,20 @@ func (r * Renderer) GLProjectionMatrix(n , f, fov float64) {
 	aspectRatio := float32(float64(r.vpWidth) / float64(r.vpHeight))
 	top := float32(math.Tan(((fov) * (math.Pi/180)) / 2) * n)
 	right := float32(top * aspectRatio)
+	
 	r.projectionMatrix = numg.M{
 		{float32(n)/right,0,0,0},
 		{0,float32(n)/top,0,0},
 		{0,0,-(float32(f) + float32(n)/(float32(f)-float32(n))),-2*float32(f)*float32(n)/(float32(f) - float32(n))},
 		{0,0,-1,0},
 	}
+}
+
+func (r * Renderer)PerlinNoise() {
+		for j := 0; j < int(r.height); j++ {
+			x := rand.Intn(int(r.width))
+			r.GlPoint(V2{float32(x),float32(j)})
+		}
 }
 
 // Fills a triangle with Bariy centric coordinates
@@ -459,8 +467,12 @@ func (r *Renderer) GLTriangleFillBC(color Color, A,B,C V3, verts []V3 ,textCoord
 							"vColor": color,
 							"triangleNormal": V3{triangleNormal[0],triangleNormal[1],triangleNormal[2]}, 
 							"textCoords": textCoords,
-							"positionCoords": V2{float32(x),float32(y)}},
-						)
+							"positionCoords": V2{float32(x),float32(y)},
+							"zBufferValue": r.zBuffer[int(y)][int(x)],
+							"x": float32(x),
+							"y": float32(y),
+						},
+)
 						r.GlPoint(V2{float32(x),float32(y)}, 
 						Color{red,green,blue})
 					} else {

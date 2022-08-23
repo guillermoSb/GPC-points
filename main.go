@@ -8,8 +8,8 @@ import (
 
 func main() {
 	fmt.Println("---------- BMP IMAGE CREATION ----------")	
-	width := 200
-	height := 200
+	width := 1000
+	height := 1000
 	renderer := gl.Renderer{}
 	renderer.GlInit(uint32(width), uint32(height))
 	renderer.GlClearColor(0.1,0.1,0.1)
@@ -27,8 +27,9 @@ func main() {
 	// renderer.GlLoadModel("mario.obj", gl.V3{0,-1,-10}, gl.V3{25,0,0}, gl.V3{0.04,0.04,0.04})
 	// DUTCH ANGLE
 	renderer.ActiveTexture = gl.InitTexture("marioD.bmp")	// Mario Texture
-	renderer.ActiveShader = gl.GShader
+	renderer.ActiveShader = gl.CShader
 	renderer.GlLoadModel("mario.obj", gl.V3{0,0,-5}, gl.V3{0,0,0}, gl.V3{0.04,0.04,0.04})
+	// renderer.PerlinNoise()
 	renderer.GlFinish("out.bmp")
 	fmt.Println("----------      FINISHED      ----------")	
 }

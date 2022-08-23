@@ -1,6 +1,7 @@
 package numg
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -112,4 +113,9 @@ func Test_calculateInverseMatrix(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, r)
+}
+
+func Test_shuffle(t *testing.T){
+	
+	fmt.Println(MakePermutation())
 }
