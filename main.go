@@ -28,13 +28,14 @@ func main() {
 	// renderer.GlLoadModel("mario.obj", gl.V3{0,-1,-10}, gl.V3{25,0,0}, gl.V3{0.04,0.04,0.04})
 	// DUTCH ANGLE
 
-	renderer.ActiveShader = gl.CShader
-	renderer.GlLoadModel("lucky.obj", gl.V3{0,0,-4}, gl.V3{0,0,0}, gl.V3{0.00005,0.00005,0.00005})
-	renderer.ActiveTexture = gl.InitTexture("marioD.bmp")	// Mario Texture
-	renderer.ActiveShader = gl.FlatShader
-	renderer.GlLoadModel("mario.obj", gl.V3{0,-1.6,-5}, gl.V3{0,0,0}, gl.V3{0.02,0.02,0.02})
+	// renderer.ActiveShader = gl.UnlitShader
+	// renderer.GlLoadModel("lucky.obj", gl.V3{0,0,-4}, gl.V3{0,0,0}, gl.V3{0.00005,0.00005,0.00005})
+	// renderer.ActiveTexture = gl.InitTexture("marioD.bmp")	// Mario Texture
+	// renderer.ActiveShader = gl.FlatShader
+	// renderer.GlLoadModel("mario.obj", gl.V3{1,-1,-12}, gl.V3{0,0,0}, gl.V3{0.02,0.02,0.02})
+	// renderer.ActiveTexture = gl.InitTexture("plane.bmp")	// Mario Texture
+	renderer.GlLoadModel("plane.obj", gl.V3{0,0,-100}, gl.V3{0,0,0}, gl.V3{0.02,0.02,0.02})
 	
-	// renderer.PerlinNoise()
 	renderer.GlFinish("out.bmp")
 	fmt.Println("----------      FINISHED      ----------")	
 }
