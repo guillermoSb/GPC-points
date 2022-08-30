@@ -11,10 +11,11 @@ func main() {
 	width := 1024
 	height := 1024
 	renderer := gl.Renderer{}
-	renderer.GlInit(uint32(width), uint32(height))
-	renderer.GlClearColor(0.1,0.1,0.1)
+	renderer.GlInit(uint32(width), uint32(height), "sunshine-bg.bmp")
+	renderer.GlClearColor(0,0,0)
 	renderer.GlColor(1,1,1)
 	renderer.GlClear()
+	renderer.GLDrawBackground()
 	
 	// PHOTO SHOOT
 	// Para utilizar el photo shoot descompentar las lineas de cada una
@@ -26,14 +27,11 @@ func main() {
 	// HIGH ANGLE
 	// renderer.GlLoadModel("mario.obj", gl.V3{0,-1,-10}, gl.V3{25,0,0}, gl.V3{0.04,0.04,0.04})
 	// DUTCH ANGLE
-	renderer.ActiveTexture = gl.InitTexture("marioD.bmp")	// Mario Texture
+
 	renderer.ActiveShader = gl.CShader
-	renderer.GlLoadModel("mario.obj", gl.V3{-2,1.6,-5}, gl.V3{0,0,0}, gl.V3{0.02,0.02,0.02})
-	renderer.ActiveShader = gl.BoxBlurShader
-	renderer.GlLoadModel("mario.obj", gl.V3{0,1.6,-5}, gl.V3{0,0,0}, gl.V3{0.02,0.02,0.02})
-	renderer.ActiveShader = gl.BWShader
-	renderer.GlLoadModel("mario.obj", gl.V3{2,1.6,-5}, gl.V3{0,0,0}, gl.V3{0.02,0.02,0.02})
-	renderer.ActiveShader = gl.GShader
+	renderer.GlLoadModel("lucky.obj", gl.V3{0,0,-4}, gl.V3{0,0,0}, gl.V3{0.00005,0.00005,0.00005})
+	renderer.ActiveTexture = gl.InitTexture("marioD.bmp")	// Mario Texture
+	renderer.ActiveShader = gl.FlatShader
 	renderer.GlLoadModel("mario.obj", gl.V3{0,-1.6,-5}, gl.V3{0,0,0}, gl.V3{0.02,0.02,0.02})
 	
 	// renderer.PerlinNoise()

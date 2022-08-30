@@ -33,7 +33,7 @@ func InitTexture(fileName string) Texture{
 
 	heightBits := make([]byte, 4)
 	f.ReadAt(heightBits, 22)
-	height := fromByteToInt(widthBits)
+	height := fromByteToInt(heightBits)
 
 	f.Seek(int64(headerSize), 0)
 	pixels := [][]Color{}
@@ -57,6 +57,7 @@ func InitTexture(fileName string) Texture{
 	}
   texture.Width = int(width)
 	texture.Height = int(height)
+	// 🔥 quemando la textura
 	texture.Pixels = pixels
 	texture.Name = fileName
 	return texture

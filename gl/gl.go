@@ -25,6 +25,7 @@ type Renderer struct {
 	vpX,vpY,vpWidth,vpHeight uint32
 	ActiveShader func(r *Renderer, args KWA) (float32, float32, float32)
 	ActiveTexture Texture
+	Background Texture
 	dirLight V3
 	viewMatrix, projectionMatrix, viewPortMatrix numg.M
 }
@@ -33,20 +34,23 @@ type Renderer struct {
 // Parameters:
 // - width: Width of the renderer
 // - height: Height of the renderer
-func (r * Renderer) GlInit(width, height uint32) {
-	r.glCreateWindow(width, height)
+func (r * Renderer) GlInit(width, height uint32, background string) {
+	r.glCreateWindow(width, height, background)
 }
 // Creates a new window 
 // Parameters:
 // - width: Width of the window
 // - height: Height of the window
-func (r * Renderer) glCreateWindow(width, height uint32) {
+func (r * Renderer) glCreateWindow(width, height uint32, background string) {
 	r.width = width
 	r.height = height
 	r.pixels = [][]Color{}
 	r.dirLight = V3{0,0,-1}
 	r.GLViewMatrix(V3{0,0,0}, V3{0,0,0})
 	r.GlViewPort(0,0,r.width,r.height)
+	if background != "" {
+		r.Background = InitTexture(background)
+	}
 }
 
 // Sets the clearColor for the renderer
@@ -60,6 +64,19 @@ func (r * Renderer) GlClearColor(red, green, blue float32) {
 		log.Fatal(err)
 	}
 	r.clearColor = color
+}
+
+
+func (r * Renderer) GLDrawBackground() {
+	for x := r.vpX; x < r.vpWidth; x++ {
+		for y := r.vpY; y < r.vpHeight; y++ {
+			ux := (float32(x)/float32(r.vpWidth))	// value for x 0 -1
+			uy := (float32(y)/float32(r.vpHeight))	// value for y 0 -1
+			texX := int(ux * float32(r.Background.Width))	
+			texY := int(uy * float32(r.Background.Height))
+			r.GlPoint(V2{float32(x),float32(y)}, r.Background.Pixels[texY][texX])
+		}	
+	}
 }
 
 // Sets the color for the renderer
@@ -104,10 +121,11 @@ func (r * Renderer) GlPoint(point V2, colors ...Color) {
 	if len(colors) > 0 {
 		r.GlColor(colors[0].R, colors[0].G, colors[0].B)
 	}
-	if (point.X >= float32(r.width) || point.X < 0) || (point.Y >= float32(r.height) || point.Y < 0){
+	if point.Y >= float32(len(r.pixels)) || point.X < 0 || point.Y >= float32(len(r.pixels[0])) || point.Y < 0{
 		return;
+	} else {
+		r.pixels[int(point.Y)][int(point.X)] = r.color
 	}
-	r.pixels[int(point.Y)][int(point.X)] = r.color
 }
 
 // Draws a point on the viewport
