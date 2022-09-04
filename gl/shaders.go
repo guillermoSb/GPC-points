@@ -76,6 +76,26 @@ func FlatShader(r *Renderer, args KWA) (float32, float32, float32)  {
 		return color.R ,color.G, color.B 
 }
 
+func YellowShader(r *Renderer, args KWA) (float32, float32, float32)  {
+	triangleNormal := args["triangleNormal"].(V3)
+	color := args["vColor"].(Color)
+	A := numg.V3{triangleNormal.X, triangleNormal.Y, triangleNormal.Z}
+	B := numg.V3MultiplyScalar(numg.V3{r.dirLight.X, r.dirLight.Y, r.dirLight.Z}, -1)
+	intensity := numg.V3DotProduct(A,B)
+	if r.ActiveTexture.Name != "" {
+		// p = Au + Bv + Cw
+		color.R = 1
+		color.G = 1
+		color.B = 0
+		if intensity > 0 {
+			return color.R * intensity,color.G * intensity, color.B * intensity		
+		} else {
+			return 0,0,0
+		}
+	}
+		return color.R ,color.G, color.B 
+}
+
 func UnlitShader(r *Renderer, args KWA) (float32, float32, float32)  {
 	u := args["baryCoords"].(V3).X
 	v := args["baryCoords"].(V3).Y
